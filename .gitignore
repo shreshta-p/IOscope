@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.legacy-build/
+out/
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.db-shm
+*.db-wal
+*.etl
+*.bin
+.env
+.env.*
+!.env.example

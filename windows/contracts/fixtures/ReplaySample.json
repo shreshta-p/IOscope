@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "sim-run-42",
+  "phaseId": null,
+  "telemetry": {
+    "schemaVersion": "1.0.0",
+    "sessionId": "sim-session-42",
+    "runId": "sim-run-42",
+    "origin": "simulated",
+    "sequence": 0,
+    "elapsedUs": 0,
+    "capturedAt": "2026-09-06T00:00:00Z",
+    "measurements": [
+      {
+        "metricId": "storage.read.bytes_per_second",
+        "deviceId": "nvme0",
+        "scope": "system",
+        "unit": "bytes/s",
+        "value": 1048576,
+        "status": "available",
+        "provenance": "simulated",
+        "source": "simulation.v1",
+        "ageMs": 0,
+        "windowMs": 1000,
+        "reason": null
+      }
+    ]
+  },
+  "flow": {
+    "schemaVersion": "1.0.0",
+    "mappingVersion": "1.0.0",
+    "sequence": 0,
+    "elapsedUs": 0,
+    "paths": [
+      {
+        "pathId": "nvme-ram-read",
+        "from": "nvme0",
+        "to": "ram0",
+        "representation": "aggregated-conceptual",
+        "status": "active",
+        "activity": 0.09998592003880415,
+        "direction": "forward",
+        "evidence": [
+          {
+            "sequence": 0,
+            "deviceId": "nvme0",
+            "metricId": "storage.read.bytes_per_second"
+          }
+        ]
+      }
+    ],
+    "queue": {
+      "deviceId": "nvme0",
+      "representation": "aggregated",
+      "configuredLimit": 8,
+      "observedAverage": null,
+      "evidence": []
+    }
+  },
+  "workloadStatus": {
+    "schemaVersion": "1.0.0",
+    "runId": "sim-run-42",
+    "state": "completed",
+    "elapsedUs": 0,
+    "progress": 1,
+    "reason": null
+  },
+  "analyzerEvents": [
+    {
+      "schemaVersion": "1.0.0",
+      "eventId": "event-0",
+      "runId": "sim-run-42",
+      "elapsedUs": 0,
+      "ruleId": "fixture-observation",
+      "ruleVersion": "1.0.0",
+      "observation": "Synthetic storage read activity is present.",
+      "interpretation": "Demonstrates an aggregated conceptual read path.",
+      "confidence": "high",
+      "simpleExplanation": null,
+      "evidence": [
+        {
+          "sequence": 0,
+          "deviceId": "nvme0",
+          "metricId": "storage.read.bytes_per_second"
+        }
+      ]
+    }
+  ],
+  "safetyEvents": [
+    {
+      "schemaVersion": "1.0.0",
+      "eventId": "safety-0",
+      "runId": "sim-run-42",
+      "elapsedUs": 0,
+      "ruleId": "simulation-only",
+      "action": "admit",
+      "message": "Synthetic fixture; no workload executed.",
+      "evidence": []
+    }
+  ]
+}

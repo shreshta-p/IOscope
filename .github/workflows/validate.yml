@@ -1,0 +1,21 @@
+name: Validate Windows contracts and simulation
+on: [push, pull_request]
+jobs:
+  windows-validation:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: windows/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: npm ci
+      - run: python -m pip install -r tools/requirements.txt
+      - run: npm run verify

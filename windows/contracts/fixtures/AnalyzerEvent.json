@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "eventId": "event-0",
+  "runId": "sim-run-42",
+  "elapsedUs": 0,
+  "ruleId": "fixture-observation",
+  "ruleVersion": "1.0.0",
+  "observation": "Synthetic storage read activity is present.",
+  "interpretation": "Demonstrates an aggregated conceptual read path.",
+  "confidence": "high",
+  "simpleExplanation": null,
+  "evidence": [
+    {
+      "sequence": 0,
+      "deviceId": "nvme0",
+      "metricId": "storage.read.bytes_per_second"
+    }
+  ]
+}

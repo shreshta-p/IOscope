@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0.0",
+  "deviceId": "nvme0",
+  "capabilities": [
+    {
+      "metricId": "storage.read.bytes_per_second",
+      "status": "available",
+      "requiresElevation": false,
+      "reason": null
+    }
+  ]
+}

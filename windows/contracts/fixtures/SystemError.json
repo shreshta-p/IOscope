@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "code": "ADAPTER_UNAVAILABLE",
+  "operation": "sample",
+  "correlationId": "correlation-0",
+  "runId": null,
+  "timestamp": "2026-09-06T00:00:00Z",
+  "message": "NVML is not available.",
+  "retryable": false
+}

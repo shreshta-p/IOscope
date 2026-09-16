@@ -1,0 +1,40 @@
+{
+  "name": "ioscope",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "contracts",
+    "simulation",
+    "apps/ui"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "contracts:generate": "node tools/generate-contracts.mjs",
+    "contracts:check": "node tools/generate-contracts.mjs --check",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "simulation:export": "tsx tools/export-simulation.ts",
+    "format": "prettier --write \"{contracts,simulation}/{src,tests}/**/*.ts\" \"apps/ui/{src,tests}/**/*.{ts,tsx,css}\" \"apps/ui/*.ts\" \"tools/*.{ts,mjs}\" package.json package-lock.json tsconfig.json .prettierrc.json",
+    "format:check": "prettier --check \"{contracts,simulation}/{src,tests}/**/*.ts\" \"apps/ui/{src,tests}/**/*.{ts,tsx,css}\" \"apps/ui/*.ts\" \"tools/*.{ts,mjs}\" package.json package-lock.json tsconfig.json .prettierrc.json",
+    "verify": "npm run contracts:check && npm run format:check && npm run typecheck && npm test && python tools/validate_contracts.py --recording simulation/fixtures/seed-42.json && python tools/check_docs.py",
+    "dev": "npm run dev --workspace @ioscope/ui",
+    "build": "npm run build --workspace @ioscope/ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@types/three": "0.185.4",
+    "@vitejs/plugin-react": "6.1.1",
+    "json-schema-to-typescript": "15.0.4",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  }
+}
