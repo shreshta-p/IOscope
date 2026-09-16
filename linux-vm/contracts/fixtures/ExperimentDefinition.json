@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "definitionId": "qd-fixture",
+  "title": "Queue depth fixture",
+  "question": "How does concurrency affect storage?",
+  "concept": "Configured outstanding limit is distinct from observed queue.",
+  "variable": "queueDepth",
+  "hypothesis": "Additional concurrency may improve utilization.",
+  "phases": [
+    {
+      "schemaVersion": "1.0.0",
+      "phaseId": "qd8",
+      "ordinal": 0,
+      "purpose": "Observe queue depth 8",
+      "workload": {
+        "schemaVersion": "1.0.0",
+        "definitionId": "random-read",
+        "engine": "diskspd",
+        "readPercent": 100,
+        "blockBytes": 4096,
+        "queueDepth": 8,
+        "workingSetBytes": 536870912,
+        "intensity": "light",
+        "pattern": "random",
+        "cacheMode": "buffered",
+        "durationSeconds": 15,
+        "warmupSeconds": 0,
+        "cooldownSeconds": 0
+      },
+      "observe": [
+        "storage.read.bytes_per_second"
+      ],
+      "settleSeconds": 2
+    }
+  ]
+}

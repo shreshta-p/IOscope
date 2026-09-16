@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "mappingVersion": "1.0.0",
+  "sequence": 0,
+  "elapsedUs": 0,
+  "paths": [
+    {
+      "pathId": "nvme-ram-read",
+      "from": "nvme0",
+      "to": "ram0",
+      "representation": "aggregated-conceptual",
+      "status": "active",
+      "activity": 0.09998592003880415,
+      "direction": "forward",
+      "evidence": [
+        {
+          "sequence": 0,
+          "deviceId": "nvme0",
+          "metricId": "storage.read.bytes_per_second"
+        }
+      ]
+    }
+  ],
+  "queue": {
+    "deviceId": "nvme0",
+    "representation": "aggregated",
+    "configuredLimit": 8,
+    "observedAverage": null,
+    "evidence": []
+  }
+}

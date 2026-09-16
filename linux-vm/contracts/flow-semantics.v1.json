@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "1.0.0",
+  "mappingVersion": "1.0.0",
+  "representation": "aggregated-conceptual",
+  "bandwidthScaleBytesPerSecond": 1073741824,
+  "activityFormula": "log2(1 + min(max(bytesPerSecond, 0), scale) / 1048576) / log2(1 + scale / 1048576)",
+  "particleCountFormula": "activity == 0 ? 0 : ceil(activity * 64)",
+  "maxTotalParticles": 256,
+  "widthFormula": "1 + 3 * activity",
+  "staleAfterMs": 3000,
+  "unknownBehavior": "No particles; unknown state; never substitute zero",
+  "timeSource": "Selected replay sample elapsedUs plus deterministic playback offset",
+  "paths": [
+    {
+      "pathId": "nvme-ram-read",
+      "metricId": "storage.read.bytes_per_second",
+      "direction": "NVMe to RAM",
+      "meaning": "Conceptual aggregate read route; not directly observed memory movement"
+    },
+    {
+      "pathId": "ram-nvme-write",
+      "metricId": "storage.write.bytes_per_second",
+      "direction": "RAM to NVMe",
+      "meaning": "Conceptual aggregate write route; not individual requests"
+    }
+  ],
+  "gpuPaths": "Only explicit instrumented pipeline stages activate RAM/PCIe/VRAM/GPU paths; no inference from disk traffic",
+  "queue": "Show configured limit separately; observed average remains fractional; no request identities",
+  "pipelineStages": [
+    "prepare",
+    "allocate",
+    "read",
+    "h2d",
+    "compute",
+    "release"
+  ],
+  "pipelinePaths": [
+    {
+      "pathId": "ram-vram-h2d",
+      "metricId": "pipeline.h2d.bytes_per_second",
+      "stage": 3,
+      "from": "ram0",
+      "to": "vram0",
+      "scaling": "bandwidth"
+    },
+    {
+      "pathId": "vram-gpu-compute",
+      "metricId": "gpu.utilization",
+      "stage": 4,
+      "from": "vram0",
+      "to": "gpu0",
+      "scaling": "percent"
+    }
+  ]
+}

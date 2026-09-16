@@ -1,0 +1,8 @@
+{
+  "seed": 42,
+  "epochUtc": "2026-09-06T00:00:00Z",
+  "durationSeconds": 1,
+  "sampleIntervalMs": 1000,
+  "scenario": "mixed",
+  "unavailableMetrics": []
+}

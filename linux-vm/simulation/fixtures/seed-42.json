@@ -1,0 +1,5623 @@
+{
+  "schemaVersion": "1.0.0",
+  "config": {
+    "seed": 42,
+    "epochUtc": "2026-09-06T00:00:00.000Z",
+    "durationSeconds": 12,
+    "sampleIntervalMs": 1000,
+    "scenario": "model-loading",
+    "unavailableMetrics": []
+  },
+  "metadata": {
+    "schemaVersion": "1.0.0",
+    "runId": "sim-model-loading-42-d6da5b33",
+    "origin": "simulated",
+    "startedAt": "2026-09-06T00:00:00.000Z",
+    "endedAt": "2026-09-06T00:00:11.000Z",
+    "inventory": {
+      "schemaVersion": "1.0.0",
+      "inventoryId": "sim-model-loading-42-d6da5b33-inventory",
+      "platform": "simulated",
+      "devices": [
+        {
+          "deviceId": "cpu0",
+          "kind": "cpu",
+          "name": "Simulated CPU",
+          "metrics": []
+        },
+        {
+          "deviceId": "ram0",
+          "kind": "ram",
+          "name": "Simulated 32 GiB RAM",
+          "metrics": []
+        },
+        {
+          "deviceId": "nvme0",
+          "kind": "storage",
+          "name": "Simulated NVMe",
+          "metrics": []
+        },
+        {
+          "deviceId": "gpu0",
+          "kind": "gpu",
+          "name": "Simulated GPU",
+          "metrics": []
+        },
+        {
+          "deviceId": "vram0",
+          "kind": "vram",
+          "name": "Simulated 12 GiB VRAM",
+          "metrics": []
+        }
+      ]
+    },
+    "capabilities": [
+      {
+        "schemaVersion": "1.0.0",
+        "deviceId": "cpu0",
+        "capabilities": [
+          {
+            "metricId": "cpu.utilization",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          }
+        ]
+      },
+      {
+        "schemaVersion": "1.0.0",
+        "deviceId": "ram0",
+        "capabilities": [
+          {
+            "metricId": "ram.total",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          }
+        ]
+      },
+      {
+        "schemaVersion": "1.0.0",
+        "deviceId": "nvme0",
+        "capabilities": [
+          {
+            "metricId": "storage.capacity",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "status": "unavailable",
+            "requiresElevation": false,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          }
+        ]
+      },
+      {
+        "schemaVersion": "1.0.0",
+        "deviceId": "gpu0",
+        "capabilities": [
+          {
+            "metricId": "gpu.utilization",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          }
+        ]
+      },
+      {
+        "schemaVersion": "1.0.0",
+        "deviceId": "vram0",
+        "capabilities": [
+          {
+            "metricId": "vram.total",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "status": "available",
+            "requiresElevation": false,
+            "reason": null
+          }
+        ]
+      }
+    ],
+    "workload": {
+      "schemaVersion": "1.0.0",
+      "definitionId": "model-loading",
+      "engine": "gpu-pipeline",
+      "readPercent": 100,
+      "blockBytes": 1048576,
+      "queueDepth": 4,
+      "workingSetBytes": 268435456,
+      "intensity": "light",
+      "pattern": "sequential",
+      "cacheMode": "buffered",
+      "durationSeconds": 12,
+      "warmupSeconds": 0,
+      "cooldownSeconds": 0
+    },
+    "experimentExecutionId": null,
+    "phaseId": null,
+    "engine": {
+      "name": "synthetic-profile",
+      "version": "1.0.0",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "argv": []
+    },
+    "mappingVersion": "1.0.0",
+    "analyzerVersion": "1.0.0",
+    "simulatorVersion": "1.0.0",
+    "seed": 42,
+    "outcome": "completed",
+    "abortReason": null,
+    "uiMode": "measurement",
+    "summaries": [],
+    "artifacts": []
+  },
+  "samples": [
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "prepare",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 0,
+        "elapsedUs": 0,
+        "capturedAt": "2026-09-06T00:00:00.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.002644,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25769803776,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 0,
+        "elapsedUs": 0,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 0,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 0,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 0,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 0,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 0,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 0,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 0,
+        "progress": 0,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "prepare",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 1,
+        "elapsedUs": 1000000,
+        "capturedAt": "2026-09-06T00:00:01.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.660312,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25769803776,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 1,
+        "elapsedUs": 1000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 1,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 1,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 1,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 1,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 1,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 1,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 1,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 1000000,
+        "progress": 0.09090909090909091,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "allocate",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 2,
+        "elapsedUs": 2000000,
+        "capturedAt": "2026-09-06T00:00:02.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.110957,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 2,
+        "elapsedUs": 2000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 2,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 2,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 2,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 2,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 2,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 2,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 2000000,
+        "progress": 0.18181818181818182,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "allocate",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 3,
+        "elapsedUs": 3000000,
+        "capturedAt": "2026-09-06T00:00:03.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.849377,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 3,
+        "elapsedUs": 3000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 3,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 3,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 3,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 3,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 3,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 3,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 3,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 3000000,
+        "progress": 0.2727272727272727,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "read",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 4,
+        "elapsedUs": 4000000,
+        "capturedAt": "2026-09-06T00:00:04.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.875439,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 138248977.77,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 131.844499,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 2,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 4,
+        "elapsedUs": 4000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.7052601538433054,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 4,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 4,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 4,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 4,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 4,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 4,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 1,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 4000000,
+        "progress": 0.36363636363636365,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "read",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 5,
+        "elapsedUs": 5000000,
+        "capturedAt": "2026-09-06T00:00:05.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.335611,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 132452614.215,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 126.316656,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 2,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 5,
+        "elapsedUs": 5000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.6991292853316647,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 5,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 5,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 5,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 5,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 5,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 5,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 1,
+          "evidence": [
+            {
+              "sequence": 5,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 5000000,
+        "progress": 0.45454545454545453,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "h2d",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 6,
+        "elapsedUs": 6000000,
+        "capturedAt": "2026-09-06T00:00:06.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.864609,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1342177280,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 3,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 276265371.96,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 6,
+        "elapsedUs": 6000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 6,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 6,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.804581193329028,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 6,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 6,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 6,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 6,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 6000000,
+        "progress": 0.5454545454545454,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "h2d",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 7,
+        "elapsedUs": 7000000,
+        "capturedAt": "2026-09-06T00:00:07.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.566161,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1342177280,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 3,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 269856259.43,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 7,
+        "elapsedUs": 7000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 7,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 7,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.8012082646810738,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 7,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 7,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 7,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 7,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 7,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 7000000,
+        "progress": 0.6363636363636364,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "compute",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 8,
+        "elapsedUs": 8000000,
+        "capturedAt": "2026-09-06T00:00:08.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.726482,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 60.726482,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 1500,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 75.726482,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1342177280,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 4,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 8,
+        "elapsedUs": 8000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 8,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 8,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 8,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 8,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.6072648199999999,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 8,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 8,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 8,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 8000000,
+        "progress": 0.7272727272727273,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-8",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 8000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: compute",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 8,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "compute",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 9,
+        "elapsedUs": 9000000,
+        "capturedAt": "2026-09-06T00:00:09.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.248493,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25501368320,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 60.248493,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 1500,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 75.248493,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1342177280,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 4,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 9,
+        "elapsedUs": 9000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 9,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 9,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 9,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 9,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "active",
+            "activity": 0.60248493,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 9,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 9,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 9,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 9000000,
+        "progress": 0.8181818181818182,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-8",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 8000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: compute",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 8,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "release",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 10,
+        "elapsedUs": 10000000,
+        "capturedAt": "2026-09-06T00:00:10.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.695935,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25769803776,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 5,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 10,
+        "elapsedUs": 10000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 10,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 10,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 10,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 10,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 10,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 10,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 10,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "running",
+        "elapsedUs": 10000000,
+        "progress": 0.9090909090909091,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-8",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 8000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: compute",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 8,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-10",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 10000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: release",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 10,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "runId": "sim-model-loading-42-d6da5b33",
+      "phaseId": "release",
+      "telemetry": {
+        "schemaVersion": "1.0.0",
+        "sessionId": "sim-model-loading-42-d6da5b33-session",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "origin": "simulated",
+        "sequence": 11,
+        "elapsedUs": 11000000,
+        "capturedAt": "2026-09-06T00:00:11.000Z",
+        "measurements": [
+          {
+            "metricId": "cpu.utilization",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 2.786748,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "cpu.temperature",
+            "deviceId": "cpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 50,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.total",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 34359738368,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "ram.available",
+            "deviceId": "ram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 25769803776,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.capacity",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 2199023255552,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.read.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.write.bytes_per_second",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.iops",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ops/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.queue.average",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "count",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.mean",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "ms",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "storage.latency.p95",
+            "deviceId": "nvme0",
+            "scope": "workload",
+            "unit": "ms",
+            "value": null,
+            "status": "unavailable",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": "Not modeled in this scenario"
+          },
+          {
+            "metricId": "storage.temperature",
+            "deviceId": "nvme0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 40,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.utilization",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "percent",
+            "value": 1,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.temperature",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "celsius",
+            "value": 45,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.clock",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "mhz",
+            "value": 300,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "gpu.power",
+            "deviceId": "gpu0",
+            "scope": "system",
+            "unit": "watts",
+            "value": 16,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.total",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 12884901888,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "vram.used",
+            "deviceId": "vram0",
+            "scope": "system",
+            "unit": "bytes",
+            "value": 1073741824,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.stage",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "count",
+            "value": 5,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          },
+          {
+            "metricId": "pipeline.h2d.bytes_per_second",
+            "deviceId": "gpu0",
+            "scope": "workload",
+            "unit": "bytes/s",
+            "value": 0,
+            "status": "available",
+            "provenance": "simulated",
+            "source": "simulation.v1",
+            "ageMs": 0,
+            "windowMs": 1000,
+            "reason": null
+          }
+        ]
+      },
+      "flow": {
+        "schemaVersion": "1.0.0",
+        "mappingVersion": "1.0.0",
+        "sequence": 11,
+        "elapsedUs": 11000000,
+        "paths": [
+          {
+            "pathId": "nvme-ram-read",
+            "from": "nvme0",
+            "to": "ram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 11,
+                "deviceId": "nvme0",
+                "metricId": "storage.read.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-nvme-write",
+            "from": "ram0",
+            "to": "nvme0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 11,
+                "deviceId": "nvme0",
+                "metricId": "storage.write.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "ram-vram-h2d",
+            "from": "ram0",
+            "to": "vram0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 11,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 11,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.h2d.bytes_per_second"
+              }
+            ]
+          },
+          {
+            "pathId": "vram-gpu-compute",
+            "from": "vram0",
+            "to": "gpu0",
+            "representation": "aggregated-conceptual",
+            "status": "idle",
+            "activity": 0,
+            "direction": "forward",
+            "evidence": [
+              {
+                "sequence": 11,
+                "deviceId": "gpu0",
+                "metricId": "pipeline.stage"
+              },
+              {
+                "sequence": 11,
+                "deviceId": "gpu0",
+                "metricId": "gpu.utilization"
+              }
+            ]
+          }
+        ],
+        "queue": {
+          "deviceId": "nvme0",
+          "representation": "aggregated",
+          "configuredLimit": 4,
+          "observedAverage": 0,
+          "evidence": [
+            {
+              "sequence": 11,
+              "deviceId": "nvme0",
+              "metricId": "storage.queue.average"
+            }
+          ]
+        }
+      },
+      "workloadStatus": {
+        "schemaVersion": "1.0.0",
+        "runId": "sim-model-loading-42-d6da5b33",
+        "state": "completed",
+        "elapsedUs": 11000000,
+        "progress": 1,
+        "reason": null
+      },
+      "analyzerEvents": [
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-0",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 0,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: prepare",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 0,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-2",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 2000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: allocate",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 2,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-4",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 4000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: read",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 4,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-6",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 6000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: h2d",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 6,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-8",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 8000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: compute",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 8,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        },
+        {
+          "schemaVersion": "1.0.0",
+          "eventId": "sim-model-loading-42-d6da5b33-phase-10",
+          "runId": "sim-model-loading-42-d6da5b33",
+          "elapsedUs": 10000000,
+          "ruleId": "simulation.phase-marker",
+          "ruleVersion": "1.0.0",
+          "observation": "Synthetic pipeline phase: release",
+          "interpretation": "Authored simulation stage; no hardware timing or diagnosis.",
+          "confidence": "high",
+          "simpleExplanation": null,
+          "evidence": [
+            {
+              "sequence": 10,
+              "deviceId": "gpu0",
+              "metricId": "pipeline.stage"
+            }
+          ]
+        }
+      ],
+      "safetyEvents": []
+    }
+  ]
+}

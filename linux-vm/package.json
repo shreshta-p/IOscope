@@ -1,0 +1,31 @@
+{
+  "name": "ioscope-linux",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "contracts",
+    "simulation"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "contracts:generate": "node tools/generate-contracts.mjs",
+    "contracts:check": "node tools/generate-contracts.mjs --check",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "simulation:export": "tsx tools/export-simulation.ts",
+    "format": "prettier --write \"{contracts,simulation}/{src,tests}/**/*.ts\" \"tools/*.{ts,mjs}\" package.json tsconfig.json .prettierrc.json",
+    "format:check": "prettier --check \"{contracts,simulation}/{src,tests}/**/*.ts\" \"tools/*.{ts,mjs}\" package.json tsconfig.json .prettierrc.json",
+    "verify": "npm run contracts:check && npm run format:check && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "json-schema-to-typescript": "15.0.4",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "eventId": "safety-0",
+  "runId": "sim-run-42",
+  "elapsedUs": 0,
+  "ruleId": "simulation-only",
+  "action": "admit",
+  "message": "Synthetic fixture; no workload executed.",
+  "evidence": []
+}

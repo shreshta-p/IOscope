@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0.0",
+  "runId": "sim-run-42",
+  "origin": "simulated",
+  "startedAt": "2026-09-06T00:00:00Z",
+  "endedAt": "2026-09-06T00:00:00Z",
+  "inventory": {
+    "schemaVersion": "1.0.0",
+    "inventoryId": "sim-inventory",
+    "platform": "simulated",
+    "devices": [
+      {
+        "deviceId": "nvme0",
+        "kind": "storage",
+        "name": "Simulated NVMe",
+        "metrics": []
+      },
+      {
+        "deviceId": "ram0",
+        "kind": "ram",
+        "name": "Simulated RAM",
+        "metrics": []
+      }
+    ]
+  },
+  "capabilities": [
+    {
+      "schemaVersion": "1.0.0",
+      "deviceId": "nvme0",
+      "capabilities": [
+        {
+          "metricId": "storage.read.bytes_per_second",
+          "status": "available",
+          "requiresElevation": false,
+          "reason": null
+        }
+      ]
+    }
+  ],
+  "workload": {
+    "schemaVersion": "1.0.0",
+    "definitionId": "random-read",
+    "engine": "diskspd",
+    "readPercent": 100,
+    "blockBytes": 4096,
+    "queueDepth": 8,
+    "workingSetBytes": 536870912,
+    "intensity": "light",
+    "pattern": "random",
+    "cacheMode": "buffered",
+    "durationSeconds": 15,
+    "warmupSeconds": 0,
+    "cooldownSeconds": 0
+  },
+  "experimentExecutionId": null,
+  "phaseId": null,
+  "engine": {
+    "name": "synthetic-fixture",
+    "version": "1.0.0",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "argv": []
+  },
+  "mappingVersion": "1.0.0",
+  "analyzerVersion": "1.0.0",
+  "simulatorVersion": "1.0.0",
+  "seed": 42,
+  "outcome": "completed",
+  "abortReason": null,
+  "uiMode": "measurement",
+  "summaries": [],
+  "artifacts": []
+}

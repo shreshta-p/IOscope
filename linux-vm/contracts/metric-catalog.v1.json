@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "1.0.0",
+  "metrics": [
+    {
+      "metricId": "cpu.utilization",
+      "unit": "percent",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "metricId": "ram.total",
+      "unit": "bytes",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "ram.available",
+      "unit": "bytes",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.read.bytes_per_second",
+      "unit": "bytes/s",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.write.bytes_per_second",
+      "unit": "bytes/s",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.iops",
+      "unit": "ops/s",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.queue.average",
+      "unit": "count",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.latency.mean",
+      "unit": "ms",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.latency.p95",
+      "unit": "ms",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "storage.capacity",
+      "unit": "bytes",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "gpu.utilization",
+      "unit": "percent",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "metricId": "vram.used",
+      "unit": "bytes",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "vram.total",
+      "unit": "bytes",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "cpu.temperature",
+      "unit": "celsius",
+      "min": -20,
+      "max": 125
+    },
+    {
+      "metricId": "gpu.temperature",
+      "unit": "celsius",
+      "min": -20,
+      "max": 125
+    },
+    {
+      "metricId": "storage.temperature",
+      "unit": "celsius",
+      "min": -20,
+      "max": 125
+    },
+    {
+      "metricId": "gpu.clock",
+      "unit": "mhz",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "gpu.power",
+      "unit": "watts",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "pipeline.read.duration",
+      "unit": "ms",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "pipeline.h2d.duration",
+      "unit": "ms",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "pipeline.compute.duration",
+      "unit": "ms",
+      "min": 0,
+      "max": null
+    },
+    {
+      "metricId": "pipeline.stage",
+      "unit": "count",
+      "min": 0,
+      "max": 5
+    },
+    {
+      "metricId": "pipeline.h2d.bytes_per_second",
+      "unit": "bytes/s",
+      "min": 0,
+      "max": null
+    }
+  ]
+}

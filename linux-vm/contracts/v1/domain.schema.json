@@ -1,0 +1,1686 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ioscope.local/contracts/v1/domain.schema.json",
+  "title": "IOscope canonical domain definitions",
+  "$defs": {
+    "Evidence": {
+      "type": "object",
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "deviceId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "metricId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        }
+      },
+      "required": [
+        "sequence",
+        "deviceId",
+        "metricId"
+      ],
+      "additionalProperties": false
+    },
+    "Measurement": {
+      "type": "object",
+      "properties": {
+        "metricId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "deviceId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "scope": {
+          "enum": [
+            "system",
+            "workload",
+            "process"
+          ]
+        },
+        "unit": {
+          "enum": [
+            "percent",
+            "bytes",
+            "bytes/s",
+            "ops/s",
+            "ms",
+            "count",
+            "celsius",
+            "mhz",
+            "watts"
+          ]
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "available",
+            "unavailable",
+            "unsupported",
+            "temporarily_errored"
+          ]
+        },
+        "provenance": {
+          "enum": [
+            "measured",
+            "derived",
+            "simulated",
+            "conceptual"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "ageMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "windowMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "metricId",
+        "deviceId",
+        "scope",
+        "unit",
+        "value",
+        "status",
+        "provenance",
+        "source",
+        "ageMs",
+        "windowMs",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "available"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "reason": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "value": {
+                "type": "null"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TelemetryFrame": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "sessionId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "origin": {
+          "enum": [
+            "live",
+            "simulated"
+          ]
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "elapsedUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Measurement"
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "sessionId",
+        "runId",
+        "origin",
+        "sequence",
+        "elapsedUs",
+        "capturedAt",
+        "measurements"
+      ],
+      "additionalProperties": false
+    },
+    "DeviceCapabilities": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "deviceId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metricId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "status": {
+                "enum": [
+                  "available",
+                  "unavailable",
+                  "unsupported",
+                  "temporarily_errored"
+                ]
+              },
+              "requiresElevation": {
+                "type": "boolean"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "metricId",
+              "status",
+              "requiresElevation",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "deviceId",
+        "capabilities"
+      ],
+      "additionalProperties": false
+    },
+    "HardwareInventory": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "inventoryId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "platform": {
+          "enum": [
+            "windows",
+            "simulated"
+          ]
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "deviceId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "kind": {
+                "enum": [
+                  "cpu",
+                  "ram",
+                  "storage",
+                  "gpu",
+                  "vram",
+                  "interconnect",
+                  "motherboard"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "metrics": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Measurement"
+                },
+                "maxItems": 256
+              }
+            },
+            "required": [
+              "deviceId",
+              "kind",
+              "name",
+              "metrics"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "inventoryId",
+        "platform",
+        "devices"
+      ],
+      "additionalProperties": false
+    },
+    "FlowState": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "mappingVersion": {
+          "const": "1.0.0"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "elapsedUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pathId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "from": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "representation": {
+                "const": "aggregated-conceptual"
+              },
+              "status": {
+                "enum": [
+                  "active",
+                  "idle",
+                  "unknown"
+                ]
+              },
+              "activity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "direction": {
+                "enum": [
+                  "forward",
+                  "reverse",
+                  "bidirectional"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/Evidence"
+                },
+                "maxItems": 16
+              }
+            },
+            "required": [
+              "pathId",
+              "from",
+              "to",
+              "representation",
+              "status",
+              "activity",
+              "direction",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        },
+        "queue": {
+          "type": "object",
+          "properties": {
+            "deviceId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            "representation": {
+              "const": "aggregated"
+            },
+            "configuredLimit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "observedAverage": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Evidence"
+              },
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "deviceId",
+            "representation",
+            "configuredLimit",
+            "observedAverage",
+            "evidence"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "mappingVersion",
+        "sequence",
+        "elapsedUs",
+        "paths",
+        "queue"
+      ],
+      "additionalProperties": false
+    },
+    "WorkloadDefinition": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "definitionId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "engine": {
+          "enum": [
+            "diskspd",
+            "gpu-pipeline"
+          ]
+        },
+        "readPercent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "blockBytes": {
+          "enum": [
+            4096,
+            16384,
+            65536,
+            262144,
+            1048576
+          ]
+        },
+        "queueDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "workingSetBytes": {
+          "type": "integer",
+          "minimum": 67108864,
+          "maximum": 4294967296
+        },
+        "intensity": {
+          "enum": [
+            "light",
+            "moderate",
+            "high"
+          ]
+        },
+        "pattern": {
+          "enum": [
+            "sequential",
+            "random"
+          ]
+        },
+        "cacheMode": {
+          "enum": [
+            "buffered",
+            "unbuffered"
+          ]
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "warmupSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "cooldownSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "definitionId",
+        "engine",
+        "readPercent",
+        "blockBytes",
+        "queueDepth",
+        "workingSetBytes",
+        "intensity",
+        "pattern",
+        "cacheMode",
+        "durationSeconds",
+        "warmupSeconds",
+        "cooldownSeconds"
+      ],
+      "additionalProperties": false
+    },
+    "WorkloadStatus": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "state": {
+          "enum": [
+            "validating",
+            "preparing",
+            "running",
+            "stopping",
+            "completed",
+            "cancelled",
+            "aborted",
+            "failed",
+            "interrupted"
+          ]
+        },
+        "elapsedUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "progress": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "state",
+        "elapsedUs",
+        "progress",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentPhase": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "phaseId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadDefinition"
+        },
+        "observe": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+          },
+          "maxItems": 16
+        },
+        "settleSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "phaseId",
+        "ordinal",
+        "purpose",
+        "workload",
+        "observe",
+        "settleSeconds"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentDefinition": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "definitionId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "variable": {
+          "enum": [
+            "queueDepth",
+            "blockBytes",
+            "cacheMode",
+            "accessPass",
+            "pipelineStage"
+          ]
+        },
+        "hypothesis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExperimentPhase"
+          },
+          "maxItems": 32,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "definitionId",
+        "title",
+        "question",
+        "concept",
+        "variable",
+        "hypothesis",
+        "phases"
+      ],
+      "additionalProperties": false
+    },
+    "AnalyzerEvent": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "eventId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "elapsedUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ruleId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "ruleVersion": {
+          "const": "1.0.0"
+        },
+        "observation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "interpretation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "simpleExplanation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 32,
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "runId",
+        "elapsedUs",
+        "ruleId",
+        "ruleVersion",
+        "observation",
+        "interpretation",
+        "confidence",
+        "simpleExplanation",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "SafetyEvent": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "eventId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "elapsedUs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ruleId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "action": {
+          "enum": [
+            "admit",
+            "warn",
+            "throttle",
+            "abort",
+            "cleanup",
+            "cleanup_failed"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "eventId",
+        "runId",
+        "elapsedUs",
+        "ruleId",
+        "action",
+        "message",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "SystemError": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "operation": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "correlationId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "code",
+        "operation",
+        "correlationId",
+        "runId",
+        "timestamp",
+        "message",
+        "retryable"
+      ],
+      "additionalProperties": false
+    },
+    "RunMetadata": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "origin": {
+          "enum": [
+            "live",
+            "simulated"
+          ]
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inventory": {
+          "$ref": "#/$defs/HardwareInventory"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceCapabilities"
+          },
+          "maxItems": 32
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadDefinition"
+        },
+        "experimentExecutionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phaseId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "engine": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "argv": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "maxItems": 64
+            }
+          },
+          "required": [
+            "name",
+            "version",
+            "sha256",
+            "argv"
+          ],
+          "additionalProperties": false
+        },
+        "mappingVersion": {
+          "const": "1.0.0"
+        },
+        "analyzerVersion": {
+          "const": "1.0.0"
+        },
+        "simulatorVersion": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "seed": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "running",
+            "completed",
+            "cancelled",
+            "aborted",
+            "failed",
+            "interrupted"
+          ]
+        },
+        "abortReason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "uiMode": {
+          "enum": [
+            "full",
+            "measurement"
+          ]
+        },
+        "summaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Measurement"
+          },
+          "maxItems": 256
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "artifactId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "kind": {
+                "enum": [
+                  "diskspd-xml",
+                  "diagnostic",
+                  "recording"
+                ]
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "artifactId",
+              "kind",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "origin",
+        "startedAt",
+        "endedAt",
+        "inventory",
+        "capabilities",
+        "workload",
+        "experimentExecutionId",
+        "phaseId",
+        "engine",
+        "mappingVersion",
+        "analyzerVersion",
+        "simulatorVersion",
+        "seed",
+        "outcome",
+        "abortReason",
+        "uiMode",
+        "summaries",
+        "artifacts"
+      ],
+      "additionalProperties": false
+    },
+    "ReplaySample": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "runId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "phaseId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "telemetry": {
+          "$ref": "#/$defs/TelemetryFrame"
+        },
+        "flow": {
+          "$ref": "#/$defs/FlowState"
+        },
+        "workloadStatus": {
+          "$ref": "#/$defs/WorkloadStatus"
+        },
+        "analyzerEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AnalyzerEvent"
+          },
+          "maxItems": 256
+        },
+        "safetyEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SafetyEvent"
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "phaseId",
+        "telemetry",
+        "flow",
+        "workloadStatus",
+        "analyzerEvents",
+        "safetyEvents"
+      ],
+      "additionalProperties": false
+    },
+    "PresentationContext": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "mode": {
+          "enum": [
+            "LIVE",
+            "SIMULATED",
+            "RECORDED"
+          ]
+        },
+        "origin": {
+          "enum": [
+            "live",
+            "simulated"
+          ]
+        },
+        "runId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "mode",
+        "origin",
+        "runId"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "LIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "const": "live"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "SIMULATED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "origin": {
+                "const": "simulated"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "RECORDED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "runId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "SimulationConfig": {
+      "type": "object",
+      "properties": {
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "epochUtc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "sampleIntervalMs": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 1000
+        },
+        "scenario": {
+          "enum": [
+            "idle",
+            "sequential-read",
+            "random-read",
+            "mixed",
+            "queue-saturation",
+            "model-loading",
+            "memory-pressure",
+            "thermal-warning"
+          ]
+        },
+        "unavailableMetrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "seed",
+        "epochUtc",
+        "durationSeconds",
+        "sampleIntervalMs",
+        "scenario"
+      ],
+      "additionalProperties": false
+    },
+    "SimulationRecording": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "config": {
+          "$ref": "#/$defs/SimulationConfig"
+        },
+        "metadata": {
+          "$ref": "#/$defs/RunMetadata"
+        },
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReplaySample"
+          },
+          "minItems": 1,
+          "maxItems": 6000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "config",
+        "metadata",
+        "samples"
+      ],
+      "additionalProperties": false
+    },
+    "StreamRequest": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{48}$"
+            }
+          },
+          "required": [
+            "token"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ack": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "ack"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TelemetryEnvelope": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "telemetry"
+        },
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "sessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "payload": {
+          "$ref": "#/$defs/TelemetryFrame"
+        }
+      },
+      "required": [
+        "kind",
+        "schemaVersion",
+        "sessionId",
+        "sequence",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "RunRecording": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "metadata": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/RunMetadata"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "origin": {
+                  "const": "live"
+                }
+              }
+            }
+          ]
+        },
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReplaySample"
+          },
+          "minItems": 1,
+          "maxItems": 6000
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "metadata",
+        "samples"
+      ],
+      "additionalProperties": false
+    },
+    "Recording": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/SimulationRecording"
+        },
+        {
+          "$ref": "#/$defs/RunRecording"
+        }
+      ]
+    },
+    "WorkloadAdmission": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadDefinition"
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 32
+        },
+        "diskFreeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "diskReserveBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ramAvailableBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "ramReserveBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "bufferBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "plannedWriteBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "rateBytesPerSecond": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "restrictedThermals": {
+          "type": "boolean"
+        },
+        "engineReady": {
+          "type": "boolean"
+        },
+        "engineVersion": {
+          "const": "2.3"
+        },
+        "diskAllocationBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "workload",
+        "allowed",
+        "reasons",
+        "diskFreeBytes",
+        "diskReserveBytes",
+        "ramAvailableBytes",
+        "ramReserveBytes",
+        "bufferBytes",
+        "plannedWriteBytes",
+        "rateBytesPerSecond",
+        "restrictedThermals",
+        "engineReady",
+        "engineVersion",
+        "diskAllocationBytes"
+      ],
+      "additionalProperties": false
+    },
+    "StartWorkloadRequest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[a-f0-9-]{32,48}$"
+        },
+        "workload": {
+          "$ref": "#/$defs/WorkloadDefinition"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "requestId",
+        "workload"
+      ],
+      "additionalProperties": false
+    },
+    "WorkloadSnapshot": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkloadStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "workload": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkloadDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recordingId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "status",
+        "workload",
+        "recordingId"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactPayload": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{48}$"
+        },
+        "kind": {
+          "enum": [
+            "diskspd-xml",
+            "diagnostic"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "payload": {
+          "type": "string",
+          "maxLength": 16777216
+        }
+      },
+      "required": [
+        "artifactId",
+        "kind",
+        "sha256",
+        "payload"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
