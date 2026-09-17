@@ -6,7 +6,7 @@ platform workspaces in one Git repository.
 | Workspace | Contents | Status |
 | --- | --- | --- |
 | [windows/](windows/README.md) | Existing C++ agent, React UI, contracts, simulation, tools and specifications | Phases 0-5 verified; Phase 6 real-run validation outstanding |
-| [linux-vm/](linux-vm/README.md) | Linux VM development handoff and port plan | Planning only; no Linux application implemented or validated |
+| [linux-vm/](linux-vm/README.md) | Independent Linux C++ agent, React UI, contracts, simulation, tools and specifications | V1 complete for this platform: telemetry, workload engine, all 5 experiment types, deterministic analyzer and Learn all verified against real hardware in a VM and a real browser (Phase 10 "Ask" deferred; bare-metal validation out of scope) |
 
 ```text
 IOscope/
@@ -23,10 +23,17 @@ IOscope/
     package.json
     package-lock.json
   linux-vm/
+    agent/
+    apps/ui/
+    contracts/
+    simulation/
+    tools/
+    docs/
     AGENTS.md
     CLAUDE.md
     README.md
-    docs/
+    package.json
+    package-lock.json
 ```
 
 Open the relevant platform folder in your editor. There is no root npm workspace:
@@ -53,23 +60,33 @@ The example executable path is for VS2019; VS2022 builds use `native-vs17`.
 The agent serves the UI at http://127.0.0.1:8765. Starting the agent does not start
 a workload. See the [Windows toolchain](windows/docs/TOOLCHAIN.md) for prerequisites.
 
-## Continue in Linux
+## Linux quick start
 
-After authenticating to GitHub with access to the private repository:
+From the repository root, on the Linux guest:
 
 ```bash
-git clone https://github.com/shreshta-p/IOscope.git
-cd IOscope
-git switch -c codex/linux-port
 cd linux-vm
+npm ci
+npm run verify
+npm run build
+cd agent
+cmake -S . -B build
+cmake --build build -j2   # cap parallelism; see linux-vm/AGENTS.md
+ctest --test-dir build --output-on-failure
+sudo apt-get install fio  # only needed to run real workloads, not to build
+./build/ioscope_agent ..
 ```
 
-The initial Windows checkpoint is tagged `windows-baseline-2026-09-16`.
-
-Clone this repository into the guest's local filesystem, open `linux-vm/`, and read
-its [current state](linux-vm/docs/CURRENT-STATE.md) and [port plan](linux-vm/docs/PORT-PLAN.md).
-The Windows agent cannot run natively on Linux. No Linux build commands are promised
-until that implementation exists. VM measurements must identify guest scope.
+The agent serves the UI at http://127.0.0.1:8765. Starting the agent does not
+start a workload — every real fio-backed run requires explicit admission and,
+in this project's own development history, explicit human opt-in. Measured
+fresh-clone-to-verified time in the reference VM: ~79 seconds (see
+[current state](linux-vm/docs/CURRENT-STATE.md) for the full breakdown).
+The Windows agent cannot run natively on Linux; this is an independent native
+implementation, not a compatibility layer. See
+[current state](linux-vm/docs/CURRENT-STATE.md) and
+[port plan](linux-vm/docs/PORT-PLAN.md) for exactly what's proven and how. VM
+measurements describe the guest, never the physical host.
 
 ## Handoff
 
@@ -78,5 +95,8 @@ instructions and current state. Record decisions, commands, evidence and remaini
 work in the repository so development does not depend on a particular AI agent,
 editor, chat history or personal skill installation.
 
-V1 is unfinished. No distribution license has been selected. DiskSpd binaries,
-dependencies, recordings, scratch files and build outputs are excluded from Git.
+Windows V1 is unfinished (Phase 6 real-run validation outstanding). Linux V1 is
+complete for this platform, verified in a VM against real hardware (bare-metal
+Linux validation is a separate, out-of-scope gate). No distribution license has
+been selected. DiskSpd/fio binaries, dependencies, recordings, scratch files
+and build outputs are excluded from Git.

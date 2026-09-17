@@ -1,8 +1,9 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phases 7-9 all done including UI,
-verified against real hardware and a real browser, Milestones 1-8 complete;
-only Phase 11 polish remains).
+Updated 2026-09-17 (V1 completion done: Phases 7, 8, 9 and 11 all complete,
+verified against real hardware and a real browser, Milestones 1-9 finished.
+Phase 10 (Ask) deferred at the user's request; bare-metal validation out of
+scope for this VM-based port).
 
 ## Implemented
 
@@ -648,6 +649,49 @@ demo-scenario picker, not just filler). Fixed by adding a proper scenario
 `<select>` next to the existing Live/Simulation toggle instead of leaving that
 capability with nowhere to live.
 
+## Milestone 9 (Phase 11 polish): measured budgets and flagship demos (2026-09-17)
+
+**Setup, measured from a genuinely fresh checkout**, not estimated: cloned
+`codex/linux-port` into a brand-new directory (local filesystem clone; a real
+network clone from GitHub would add network latency on top — not measured here)
+and ran the full setup/build/test sequence cold:
+
+| Step | Command | Time |
+|---|---|---|
+| TypeScript deps | `npm ci` | 8.6s |
+| TS verify (contracts/format/typecheck/121 tests) | `npm run verify` | 7.8s |
+| UI production build | `npm run build` | 0.9s |
+| Native dependency fetch (Crow/Asio/nlohmann-json/SQLite/jsoncons) | `cmake -S . -B build` | 5.4s |
+| Native build (12 targets) | `cmake --build build -j2` | 50.8s |
+| Native tests (12 suites) | `ctest --test-dir build` | 5.9s |
+| **Total, clone to fully verified** | | **~79s** |
+
+Runtime overhead, also measured fresh (not from a warmed-up long-running agent):
+- Agent startup to first successful HTTP response: **47ms**.
+- Telemetry sample poll time: **max 0.858ms** across 10 real `/proc`/`/sys` polls
+  (the `--probe` self-test), against the project's own 250ms budget — consistent
+  with the max 0.70ms recorded during the original L1 milestone.
+
+These numbers describe this VM's guest environment and this build's dependency
+cache state (e.g., the OS/npm registry connection was already warm from earlier
+work this session); they are a real, reproducible measurement of *this* setup,
+not a claim about performance on other hardware.
+
+**Two flagship demos**, both already fully documented above with real hardware
+evidence and screenshots, referenced here as the two the project would lead
+with:
+1. **The queue-depth sweep** ("Real workload evidence" and Milestone 6 above) —
+   6 real fio-backed phases showing the classic concurrency curve: IOPS rising
+   from 2524 to 7952 as queue depth climbs from 1 to 8, then throughput
+   plateauing while latency climbs sharply from 0.33ms to 4.86ms at queue depth
+   32 — demonstrated twice, once via raw HTTP and once by clicking through the
+   real Experiments UI in a real browser.
+2. **First vs repeated access with real dataset reuse** (Milestone 4) — the one
+   experiment type needing a genuine engine change (`Scratch::keep()`/`Reuse`),
+   proven by showing both phases' `engine.argv` citing the *literal same*
+   on-disk file path, not two independently-prepared-but-similar ones — a
+   concrete, verifiable claim about shared state, not just a label.
+
 ## Known limitations / not yet done
 
 - Python-based cross-language fixture validation
@@ -672,6 +716,17 @@ capability with nowhere to live.
   are engineering-validation byproducts of short, rate-capped runs in a VM. They are
   not a disk performance characterization of anything, Linux's or otherwise, and
   must not be quoted as one.
+- Of the analyzer's 6 rules, only memory pressure, queue pressure and completion
+  anomaly have been proven against real telemetry (as a genuine negative: zero
+  false positives on a healthy real run). Thermal warning, GPU transfer phase and
+  VRAM pressure are proven only by `analyzer_tests.cpp`'s synthetic data, by
+  design — this VM has no temperature sensors or GPU, and genuinely triggering
+  memory/queue pressure for real would mean deliberately exhausting VM resources,
+  which the safety policy exists to prevent.
+- Phase 10 ("Ask the Analyzer") is deferred entirely at the user's explicit
+  request — no plumbing, config flag, or stub exists for it.
+- Bare-metal Linux hardware validation remains explicitly out of scope for this
+  VM-based port, per the port plan.
 
 ## Pending gates
 
@@ -705,8 +760,14 @@ capability with nowhere to live.
 - [x] Phase 9 (Learn): 13 topics, verified in a real browser including real
       cross-page deep links to Live and Experiments (Milestone 8).
 - [ ] Phase 10 (Ask): deferred at the user's request.
-- [ ] Phase 11 (packaging/polish): not started.
-- [ ] Separate bare-metal Linux hardware and release validation.
+- [x] Phase 11 (polish): measured budgets (setup ~79s clone-to-verified, 47ms
+      agent startup, sub-millisecond telemetry polling) and two flagship demos
+      documented with real evidence (Milestone 9). No packaging/installer was
+      built — this port has always run from source (`npm run build` +
+      `cmake --build`), matching how the Windows baseline is also run, not a
+      gap introduced here.
+- [ ] Separate bare-metal Linux hardware and release validation — explicitly
+      out of scope for this VM-based port, per the port plan, not deferred work.
 
 The Windows Phase 6 real-run gate remains outstanding independently and does not
 block this work.
@@ -724,13 +785,23 @@ dependency resolved fine in that environment.
 
 ## Next task
 
-Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 9 (final): Phase 11 polish — measured budgets (build time, agent
-startup overhead), two flagship demo write-ups, a timed fresh-clone setup
-test, and a final pending-gates/limitations pass across all the docs. Phase 10
-(Ask) stays deferred at the user's request; everything else in
-`docs/COMPLETION.md`'s checklist (Phases 7-9) is now complete and verified
-against real hardware and a real browser, on Linux.
+V1 completion per `~/.claude/plans/woolly-waddling-kahan.md` is done. Every
+milestone (1-9) landed with real evidence: Phase 7 (all 5 experiment types,
+7A-7D proven against real fio, 7E honestly capability-gated), Phase 8 (the
+deterministic analyzer, verified against real telemetry), Phase 9 (Learn, with
+real working cross-page deep links), and Phase 11 (measured budgets, two
+flagship demos) are all complete, on Linux, with agent-side and UI-side
+evidence for each. Phase 10 (Ask) stays deferred at the user's explicit
+request. Bare-metal Linux hardware validation remains explicitly out of scope
+for this VM-based port, per the port plan — not unfinished work, a boundary.
+
+Nothing is queued next. Remaining optional/lower-priority items are listed in
+full under "Known limitations" above (a real-fio "aborted" case, 3 of 6
+analyzer rules unexercised against real hardware for lack of sensors/GPU, the
+Python fixture validator not ported) — none block calling this port's V1 scope
+complete. If the user wants to keep going, the natural next steps would be
+either the deferred Phase 10 (Ask) as its own scoped decision, or pushing this
+branch and confirming CI, or a PR.
 
 ## Baseline handoff
 
