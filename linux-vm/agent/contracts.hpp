@@ -28,7 +28,11 @@ public:
    if(name=="TelemetryFrame")metrics(value["measurements"],value["origin"]);
    const auto kind=name=="Recording"?(value.contains("config")?"SimulationRecording":"RunRecording"):name;
    if(kind=="SimulationRecording"||kind=="RunRecording"){
-     validate_recording_links(value,mapping_);const auto& metadata=value["metadata"];if(kind=="SimulationRecording")require(metadata["origin"]=="simulated"&&metadata["seed"]==value["config"]["seed"],"Origin/seed mismatch");else require(metadata["origin"]=="live"&&metadata["seed"].is_null()&&metadata["simulatorVersion"].is_null()&&metadata["inventory"]["platform"]=="windows","Native origin mismatch");
+     // "windows"||"linux" (not "==windows"): the only Windows-specific line in this
+     // otherwise-portable file. A native/live recording's platform must be a real
+     // native agent platform, never "simulated" — which platform is a Linux-port
+     // detail, not a wire-format one.
+     validate_recording_links(value,mapping_);const auto& metadata=value["metadata"];if(kind=="SimulationRecording")require(metadata["origin"]=="simulated"&&metadata["seed"]==value["config"]["seed"],"Origin/seed mismatch");else require(metadata["origin"]=="live"&&metadata["seed"].is_null()&&metadata["simulatorVersion"].is_null()&&(metadata["inventory"]["platform"]=="windows"||metadata["inventory"]["platform"]=="linux"),"Native origin mismatch");
      std::set<std::string> devices;for(auto& d:metadata["inventory"]["devices"])devices.insert(d["deviceId"]);
      require((metadata["outcome"]=="running")==metadata["endedAt"].is_null(),"Terminal timestamp mismatch");
      require(metadata["outcome"]=="running"||metadata["outcome"]=="completed"||!metadata["abortReason"].is_null(),"Abnormal outcome lacks reason");

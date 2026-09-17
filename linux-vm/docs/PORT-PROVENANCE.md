@@ -6,20 +6,33 @@ Source: `windows/contracts/`, `windows/simulation/`, `windows/tools/generate-con
 and `windows/tools/export-simulation.ts` at commit `280ced5`, tag
 `windows-baseline-2026-09-16`.
 
-## Deliberate, recorded schema change (not silent)
+## Deliberate, recorded schema changes (not silent)
 
-`contracts/v1/domain.schema.json`'s `WorkloadAdmission.engineVersion` was
-`{"const": "2.3"}` — DiskSpd's literal pinned version, hardcoded into the schema
-itself. Reusing "2.3" for fio's admission responses would misreport which engine
-actually ran. Relaxed to `{"type": "string", "minLength": 1, "maxLength": 64}`: every
-document valid under the Windows baseline (`engineVersion` always `"2.3"`) is still
-valid under this schema, so `schemaVersion` stays `"1.0.0"` and no fixture needed
-updating — confirmed by re-running the full `npm run verify` (109 tests, typecheck,
-format, contract-drift check) after this edit, all passing. This is the one
-intentional divergence from the byte-identical Windows contracts copy; per
+Two changes to `contracts/v1/domain.schema.json`, both found only once a real
+end-to-end run was attempted through the actual native agent (not by any
+fake-adapter test, since fixtures never carry live engine/platform values):
+
+1. `WorkloadAdmission.engineVersion` was `{"const": "2.3"}` — DiskSpd's literal
+   pinned version, hardcoded into the schema itself. Reusing "2.3" for fio's
+   admission responses would misreport which engine actually ran. Relaxed to
+   `{"type": "string", "minLength": 1, "maxLength": 64}`.
+2. `HardwareInventory.platform`'s enum was `["windows", "simulated"]` — there was no
+   valid value a Linux agent could ever report for its own inventory. Added
+   `"linux"` to the enum.
+3. `RunMetadata.artifacts[].kind` and the standalone `ArtifactPayload.kind` enums were
+   `["diskspd-xml", "diagnostic", "recording"]` / `["diskspd-xml", "diagnostic"]` —
+   fio's JSON result artifact has no valid `kind` to report as (labeling it
+   `"diskspd-xml"`, as `workload_controller.hpp` did before this fix, would misreport
+   the artifact's actual format). Added `"fio-json"` to both enums; changed the one
+   `workload_controller.hpp` call site that hardcoded `"diskspd-xml"` to `"fio-json"`.
+
+Both are additive/backward-compatible: every document valid under the Windows
+baseline is still valid under this schema, so `schemaVersion` stays `"1.0.0"` and no
+fixture needed updating — confirmed by re-running the full `npm run verify` (109
+tests, typecheck, format, contract-drift check) after both edits, all passing. Per
 [AGENTS.md](../AGENTS.md), "do not silently diverge under the same schema version" —
-recording it here is exactly that: a recorded, backward-compatible relaxation, not a
-silent meaning change. `RunMetadata.engine.version` (a plain string, not a const) is
+recording them here is exactly that: recorded, backward-compatible relaxations, not
+silent meaning changes. `RunMetadata.engine.version` (a plain string, not a const) is
 unaffected and already carries `fio_pinned_version` honestly.
 
 ## What was copied
@@ -38,11 +51,18 @@ unaffected and already carries `fio_pinned_version` honestly.
 ## Native agent (`agent/`, baseline commit 280ced5)
 
 `windows/agent/` is a mix of pure C++ business logic and Win32-specific adapters.
-The pure logic is copied unmodified into `linux-vm/agent/`: `contracts.hpp`,
-`safety.hpp`, `counter_math.hpp`, `store.hpp`, `json_input.hpp`,
-`native_recording.hpp`, `security.hpp`, `contract_tests.cpp`, `preflight.cpp`,
-`counter_math_tests.cpp`, `json_input_tests.cpp`, `safety_tests.cpp` — none of these
-touch a Windows API.
+The pure logic is copied unmodified into `linux-vm/agent/`: `safety.hpp`,
+`counter_math.hpp`, `store.hpp`, `json_input.hpp`, `native_recording.hpp`,
+`security.hpp`, `contract_tests.cpp`, `preflight.cpp`, `counter_math_tests.cpp`,
+`json_input_tests.cpp`, `safety_tests.cpp` — none of these touch a Windows API.
+
+`contracts.hpp` needed one change, found only once a real end-to-end run was
+attempted (fake-adapter tests never exercise this line, since fixtures never carry
+`inventory.platform`): its native/live-origin check for `RunRecording` hardcoded
+`metadata["inventory"]["platform"]=="windows"`. Changed to
+`(...=="windows"||...=="linux")` — a native recording must come from a real agent
+platform, never `"simulated"`; which platform that is is a port detail, not a
+wire-format one.
 
 `recording_validation.hpp` is copied with one line changed: `previousState==
 metadata["outcome"]` (a `std::string` compared directly to a `nlohmann::json` value)
@@ -51,11 +71,12 @@ compiles under MSVC's STL but not GCC/libstdc++, because nlohmann-json 3.12's C+
 Changed to `previousState==metadata["outcome"].get<std::string>()` — same comparison,
 just spelled so it resolves on both compilers.
 
-`workload_controller.hpp` is copied with exactly one intentional change: the
-`engineVersion` field is populated from `fio_pinned_version` (this file's Linux
-equivalent) instead of the Windows-only `diskspd_version` constant — the field's
-purpose (report the actually-pinned workload engine's version) is unchanged, only
-which engine that is.
+`workload_controller.hpp` is copied with two intentional changes: the `engineVersion`
+field is populated from `fio_pinned_version` (this file's Linux equivalent) instead of
+the Windows-only `diskspd_version` constant, and the completed-run artifact's `kind`
+is `"fio-json"` instead of the hardcoded `"diskspd-xml"`. Both fields' purpose is
+unchanged (report the actual engine version; label the actual artifact format) —
+only which engine/format that is.
 
 Rewritten for Linux, with the Windows file as the design reference (same
 responsibilities, same call shape, POSIX/procfs/sysfs/cgroups instead of

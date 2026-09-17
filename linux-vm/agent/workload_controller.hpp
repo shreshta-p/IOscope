@@ -44,7 +44,7 @@ public:
     auto safetyEvent=[&](const std::string& action,const std::string& message){samples.back()["safetyEvents"].push_back({{"schemaVersion","1.0.0"},{"eventId",random_id()},{"runId",id},{"elapsedUs",samples.back()["telemetry"]["elapsedUs"]},{"ruleId","native-lifecycle"},{"action",action},{"message",message},{"evidence",Json::array()}});};
     if(result.state=="aborted")safetyEvent("abort",result.reason.value_or("Native watchdog aborted the run"));
     if(result.cleaned)safetyEvent(*result.cleaned?"cleanup":"cleanup_failed",*result.cleaned?"Owned target and manifest cleanup completed":"Owned scratch cleanup requires attention");
-    auto artifacts=Json::array();if(!result.xml.empty()){Json artifact={{"artifactId",random_id()},{"kind","diskspd-xml"},{"sha256",hash_bytes(result.xml)}};metadata["artifacts"].push_back(artifact);artifact["payload"]=result.xml;artifacts.push_back(artifact);}
+    auto artifacts=Json::array();if(!result.xml.empty()){Json artifact={{"artifactId",random_id()},{"kind","fio-json"},{"sha256",hash_bytes(result.xml)}};metadata["artifacts"].push_back(artifact);artifact["payload"]=result.xml;artifacts.push_back(artifact);}
     if(!result.diagnostic.empty()){Json artifact={{"artifactId",random_id()},{"kind","diagnostic"},{"sha256",hash_bytes(result.diagnostic)}};metadata["artifacts"].push_back(artifact);artifact["payload"]=result.diagnostic;artifacts.push_back(artifact);}
     Json recording={{"schemaVersion","1.0.0"},{"metadata",metadata},{"samples",samples}};contracts_.validate("RunRecording",recording);const auto saved=store_.finish_run(recording,artifacts);
     std::lock_guard<std::mutex> lock(mutex_);snapshot_["status"]=samples.back()["workloadStatus"];snapshot_["recordingId"]=saved;busy_=false;

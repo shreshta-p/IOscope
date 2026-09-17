@@ -4,14 +4,18 @@ Updated 2026-09-17.
 
 ## Implemented
 
-L0 (portable foundation) and L1 (read-only telemetry + transport) are done with
-evidence below. A native Linux C++20 agent exists at `linux-vm/agent/`: it serves
-real telemetry (`/proc`, `/sys`, dlopen'd NVML) over the same HTTP/WebSocket API
-shape as the Windows agent, validates every response against the shared contracts,
-and persists to SQLite. The L2 workload engine (fio-backed, cgroup-isolated) is
-built and passes its full fake-adapter test suite; it has not yet run a real fio
-workload because fio is not installed on this VM yet (deliberately — see "Next
-task"). No hardware benchmark has been run. No UI exists yet.
+L0, L1, and the core of L2 are done with evidence below. A native Linux C++20 agent
+exists at `linux-vm/agent/`: it serves real telemetry (`/proc`, `/sys`, dlopen'd
+NVML) over the same HTTP/WebSocket API shape as the Windows agent, validates every
+response against the shared contracts, persists to SQLite, and can admit, run,
+complete, and clean up a real fio-backed workload end to end. With the user's
+explicit opt-in, one tiny bounded workload (64 MiB working set, the policy's
+minimum, 1 second measured duration — smaller than the eventual 64 MiB/5 s "trial")
+ran for real against the real ext4 disk in this VM; see "Real workload evidence"
+below. This is engineering validation of the pipeline, not a performance benchmark
+or the sanctioned real-hardware trial, which remains a separate, still-outstanding,
+explicit opt-in gate (safe-recovery/cancellation-with-real-fio evidence, then the
+64 MiB/5 s trial itself). No UI exists yet.
 
 ## Guest environment (recorded 2026-09-16)
 
@@ -39,8 +43,7 @@ task"). No hardware benchmark has been run. No UI exists yet.
 - Python 3.14.4 present; `pip` still not installed (see "Known limitations").
 - GCC 15.2.0, CMake 4.2.3, GNU Make 4.4.1 — apt, sudo (2026-09-17). Needed for the
   native agent; C++20 supported.
-- `fio` still not installed — needed for the next task (real workload execution),
-  not yet requested from the user.
+- `fio-3.41` — apt, sudo (2026-09-17), matches the version pinned in `agent/fio.hpp`.
 
 ## Ported code and provenance
 
@@ -66,14 +69,23 @@ Dependencies (Crow, Asio, nlohmann-json, SQLite amalgamation, jsoncons) are fetc
 CMake `FetchContent` with the same pinned URLs/hashes as `windows/agent/CMakeLists.txt`
 — these libraries are cross-platform; only compiler/link flags differ.
 
-## Deliberate, recorded contract change
+## Deliberate, recorded contract changes
 
-`contracts/v1/domain.schema.json`'s `WorkloadAdmission.engineVersion` was
-`{"const": "2.3"}` (DiskSpd's exact pinned version, hardcoded into the schema).
-Relaxed to a bounded string so fio's version can be honestly reported instead of
-misreporting DiskSpd's. Every Windows-valid document is still valid under this
-schema (backward compatible), so `schemaVersion` stays `"1.0.0"`. Full detail and
-verification in [PORT-PROVENANCE.md](PORT-PROVENANCE.md).
+Found only by actually running a request through the real agent — no fake-adapter
+test exercises live engine/platform values. Three additive, backward-compatible
+schema relaxations plus one matching C++ logic fix (every prior Windows-valid
+document remains valid; `schemaVersion` stays `"1.0.0"`):
+
+1. `WorkloadAdmission.engineVersion`: `{"const": "2.3"}` (DiskSpd's exact version)
+   → bounded string, so fio's version is reported honestly instead of DiskSpd's.
+2. `HardwareInventory.platform` enum: `["windows", "simulated"]` → added `"linux"`
+   (there was no valid value a Linux agent could ever report).
+3. `RunMetadata.artifacts[].kind` / `ArtifactPayload.kind` enums: added `"fio-json"`
+   alongside `"diskspd-xml"` (fio's JSON result artifact has a different format).
+4. `contracts.hpp`'s native-origin check hardcoded
+   `metadata["inventory"]["platform"]=="windows"` — changed to accept `"linux"` too.
+
+Full detail and verification in [PORT-PROVENANCE.md](PORT-PROVENANCE.md).
 
 ## Verification (commands actually run, 2026-09-16/17, from `linux-vm/`)
 
@@ -115,6 +127,38 @@ SIGTERM/escalation timing, and bounded-output enforcement against actual child
 processes on this VM — not a simulation of the mechanism. `scratch_tests` exercises
 real file creation/identity/cleanup/orphan-recovery on the real ext4 filesystem.
 
+## Real workload evidence (2026-09-17, user opt-in given for this specific run)
+
+After fixing the four contract issues above, one real fio-backed workload ran
+end-to-end through the actual HTTP API (`POST /api/v1/runs`, workload: 64 MiB
+working set — the policy's minimum, 4 KiB blocks, queue depth 1, random reads,
+buffered, 1 second measured duration, light intensity/rate cap):
+
+```
+curl -X POST .../api/v1/runs {64MiB, 1s, random read, buffered, light}
+  -> state: preparing, real runId
+poll .../api/v1/runs/active
+  -> state: completed, real recordingId, elapsedUs ~3.7M (prep + measured + overhead)
+GET .../api/v1/recordings/<id>
+  -> outcome: completed
+  -> engine: {"name":"fio","version":"fio-3.41"} (honest, not "diskspd"/"2.3")
+  -> inventory.platform: "linux"
+  -> summaries: storage.read.bytes_per_second ~10.96 MB/s, storage.iops ~2676,
+     storage.latency.mean ~0.32ms, storage.latency.p95 ~0.52ms
+     (rate-capped by "light" intensity = 32 MiB/s cap; not a benchmark claim —
+     one tiny run in a VM, not the sanctioned trial)
+  -> artifacts: ["fio-json"] (correctly labeled, not "diskspd-xml")
+ls ~/.local/share/ioscope/scratch/  -> empty (owned file + manifest cleaned up)
+```
+
+This is the first real (non-fake-adapter) proof that `FioEngine`'s preparation
+helper, fio invocation, JSON parsing, contract validation, SQLite persistence, and
+scratch cleanup all work together correctly on this VM. The four contract bugs
+above (all Windows-specific hardcoded values with no valid Linux equivalent) were
+found and fixed specifically because this real run was attempted — fake-adapter
+tests use synthetic values that never touch these code paths, which is itself a
+useful lesson about what fake-adapter coverage does and doesn't prove.
+
 CI: `.github/workflows/validate.yml` has a `linux-validation` job (TypeScript side
 only; the native agent isn't wired into CI yet — see "Next task"). Not yet observed
 running on GitHub Actions from this session.
@@ -126,9 +170,11 @@ running on GitHub Actions from this session.
   ported. The TS/Vitest suite and the native `contract_tests`/`safety_tests` already
   validate fixtures from two independent language runtimes now, which is meaningful
   cross-language coverage even without porting the Python script itself.
-- fio is not installed; `FioEngine` has never executed a real fio process, only the
-  fake-adapter `WorkloadController` tests. No numeric disk performance claim is made
-  anywhere.
+- Cancellation, timeout, and interrupted-run recovery have been proven against real
+  child processes in general (`process_job_tests`, `scratch_tests`) and against fio
+  specifically only for the successful-completion path (see "Real workload
+  evidence"). Cancelling/timing out a real in-flight fio run specifically — not a
+  generic sleep/flood test process — has not yet been exercised.
 - Native agent isn't wired into `.github/workflows/validate.yml` yet — CMake
   `FetchContent` needs network access in CI, which needs verifying separately.
 - No UI exists for Linux. The agent's `/` and `/assets/*` routes exist and correctly
@@ -136,8 +182,13 @@ running on GitHub Actions from this session.
 - Host-side VM specs (assigned resource limits, host disk type, physical host
   capacity) are still unknown; not requested from the user yet.
 - fio's `--rate` limiting, `ramp_time`-as-warmup, and lack of a DiskSpd-style
-  unmeasured cooldown tail are documented approximations in `agent/fio.hpp`, not
-  verified against a real run yet.
+  unmeasured cooldown tail are documented approximations in `agent/fio.hpp`. The one
+  real run so far didn't stress these enough to reveal whether the approximations
+  hold up under load; not verified beyond the one tiny successful run.
+- The one real run's numbers (~11MB/s read, ~2676 IOPS, sub-ms latency) are
+  engineering-validation byproducts of a 1-second, rate-capped, single-queue-depth
+  run in a VM. They are not a disk performance characterization of anything and must
+  not be quoted as one.
 
 ## Pending gates
 
@@ -145,9 +196,11 @@ running on GitHub Actions from this session.
 - [x] L1: read-only Linux telemetry, transport — real HTTP/WebSocket server verified
       against live `/proc`/`/sys` data. No UI yet (not blocking; UI is separate from
       the telemetry/transport gate itself).
-- [~] L2: native workload engine built, fake-adapter tests pass (10/10 native tests,
-      including real process isolation and scratch management on this VM). Real fio
-      execution and the bounded opt-in hardware trial are still outstanding.
+- [~] L2: native workload engine built and proven end-to-end with one real,
+      user-opted-in fio run (admission → preparation → fio → parsing → validation →
+      persistence → cleanup, all real). Still outstanding: real-fio cancellation/
+      timeout/interruption-recovery evidence, then the separate opt-in for the
+      64 MiB/5 s trial itself.
 - [ ] L3: controlled experiments, analysis, learning and release preparation.
 - [ ] Separate bare-metal Linux hardware and release validation.
 
@@ -156,16 +209,18 @@ block this work.
 
 ## Next task
 
-Install the pinned `fio` package (requires sudo; will ask the user), then:
-1. Verify `FioEngine::ready()`/`verify_fio()` against the real binary.
-2. Run one real `FioEngine::execute()` against a tiny owned fixture (not the 64MiB/5s
-   trial yet) to validate the fio JSON parser against real fio output, not just the
-   hand-authored fixture in `fio_tests.cpp`.
-3. Test cancellation, timeout, and interrupted-run recovery against the real process
-   (process_job_tests/scratch_tests already prove the mechanism; this step proves it
-   with fio specifically).
-4. Only after that evidence exists: request explicit opt-in for the bounded 64MiB
-   file / 5-second-read real trial, per the safety policy — never automatic.
+1. Exercise cancellation and timeout against a real (not fake-adapter) in-flight fio
+   run specifically — e.g. start a longer real run and cancel it mid-flight via
+   `POST /api/v1/runs/cancel`, and verify the recording/scratch state afterward.
+2. Simulate an interrupted run (kill the agent process mid-run) and verify
+   `WorkloadController::recover()` and orphan scratch recovery against a real fio
+   child, not just the synthetic fixtures in `workload_controller_tests`/
+   `scratch_tests`.
+3. Only after that evidence exists: request explicit opt-in for the bounded 64 MiB
+   file / 5-second-read real trial specifically, per the safety policy — never
+   automatic, and distinct from the engineering-validation run already done.
+4. Wire the native agent into CI once TypeScript CI is confirmed stable; port a
+   minimal UI (or note it's deferred) for local transport/UI completeness.
 
 ## Baseline handoff
 

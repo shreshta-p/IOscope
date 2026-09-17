@@ -126,7 +126,7 @@ export interface DeviceCapabilities {
 export interface HardwareInventory {
   schemaVersion: '1.0.0';
   inventoryId: string;
-  platform: 'windows' | 'simulated';
+  platform: 'windows' | 'linux' | 'simulated';
   /**
    * @maxItems 32
    */
@@ -345,7 +345,7 @@ export interface RunMetadata {
    */
   artifacts: {
     artifactId: string;
-    kind: 'diskspd-xml' | 'diagnostic' | 'recording';
+    kind: 'diskspd-xml' | 'fio-json' | 'diagnostic' | 'recording';
     sha256: string;
   }[];
 }
@@ -482,7 +482,7 @@ export interface WorkloadSnapshot {
  */
 export interface ArtifactPayload {
   artifactId: string;
-  kind: 'diskspd-xml' | 'diagnostic';
+  kind: 'diskspd-xml' | 'fio-json' | 'diagnostic';
   sha256: string;
   payload: string;
 }

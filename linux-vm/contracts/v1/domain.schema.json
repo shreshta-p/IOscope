@@ -294,6 +294,7 @@
         "platform": {
           "enum": [
             "windows",
+            "linux",
             "simulated"
           ]
         },
@@ -1113,6 +1114,7 @@
               "kind": {
                 "enum": [
                   "diskspd-xml",
+                  "fio-json",
                   "diagnostic",
                   "recording"
                 ]
@@ -1664,6 +1666,7 @@
         "kind": {
           "enum": [
             "diskspd-xml",
+            "fio-json",
             "diagnostic"
           ]
         },
