@@ -1,7 +1,7 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: all of Phase 7 (7A-7E) done,
-Milestones 1-5 complete).
+Updated 2026-09-17 (V1 completion underway: Phase 7 fully done including UI,
+verified in a real browser, Milestones 1-6 complete).
 
 ## Implemented
 
@@ -548,7 +548,35 @@ POST /api/v1/experiments/admission (a gpu-pipeline stage) ->
 New `experiment_controller_tests.cpp` coverage asserts the capability-probe
 reason is present in the denial. All 11 native tests pass.
 
-Not yet done: the Experiments UI and cross-phase comparison display.
+**Milestone 6 (Experiments UI) — done, verified in a real browser:** new
+`apps/ui/src/experiments-catalog.ts` (the 5 real, working `ExperimentDefinition`s —
+queue-depth sweep, block-size sweep, buffered/unbuffered, first/repeated access,
+plus the GPU pipeline listed honestly as capability-gated) and
+`apps/ui/src/Experiments.tsx`, replacing the "Choose a controlled profile"
+placeholder in `App.tsx` (Learn/Analyze keep the shared placeholder for now,
+until Milestones 7-8). Definition picker, live aggregate-admission preview
+(reusing the same debounced-preview pattern as `WorkloadLab.tsx`), phase-by-phase
+progress polling `GET /experiments/active`, start/stop, and a results table
+built from each completed phase's real `RunRecording` summaries.
+
+Verified with Playwright against the real running agent, not just typecheck:
+selecting each of the 5 profiles renders correct admission data, including the
+GPU pipeline profile honestly showing "Run blocked" with the exact capability-probe
+denial reason and a disabled Start button. Then, with the user's opt-in, ran the
+real queue-depth sweep through the UI itself (not curl): live progress correctly
+showed "QD 1 — running" while the rest were "pending," the admission panel live
+re-checked and correctly explained why a second experiment couldn't start
+("An experiment is already active"), and on completion the results table
+rendered all 6 phases' real IOPS/throughput/latency — the exact concurrency
+pattern from Milestone 2's evidence, this time produced by clicking through the
+browser. Scratch was empty afterward. `npm run verify` (121 tests) stayed green
+throughout.
+
+Not done in this milestone (deliberately deferred, not a gap in what was
+promised): `Runs.tsx` doesn't yet show an experiment-phase badge/grouping — the
+N-way comparison lives entirely in the new Experiments results table instead,
+which is more natural UX for comparing phases of one experiment than routing
+through the 2-recording compare flow built for ad hoc runs.
 
 ## Known limitations / not yet done
 
@@ -598,7 +626,9 @@ Not yet done: the Experiments UI and cross-phase comparison display.
       (Milestones 1-4).
 - [x] Phase 7E (GPU pipeline): capability-gated (real CUDA driver probe, no
       execution engine) per the user's direction (Milestone 5).
-- [ ] Experiments UI: not yet done.
+- [x] Experiments UI: definition picker, admission preview, live progress, and
+      results table — verified in a real browser against a real fio run
+      (Milestone 6).
 - [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
 - [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
@@ -622,11 +652,11 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 6: the Experiments UI (definition picker, aggregate admission
-preview, phase progress, cross-phase comparison) — all agent-side work for
-Phase 7 (7A-7E) is done. Then milestones 7-9: Phase 8 analyzer, Phase 9 Learn,
-and Phase 11 polish — each with its own commit and real evidence before the
-next starts, per the plan.
+milestone 7: Phase 8 deterministic analyzer (6 rules, wired into the sample-
+append path, `Analyze.tsx` replacing its placeholder). Then milestones 8-9:
+Phase 9 Learn and Phase 11 polish — each with its own commit and real evidence
+before the next starts, per the plan. All of Phase 7 (7A-7E, agent and UI) is
+now complete and verified.
 
 ## Baseline handoff
 
