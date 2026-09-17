@@ -126,6 +126,34 @@ Package/build config is new but mirrors the Windows workspace's UI package exact
 (same dependency versions): `apps/ui/package.json`, and `apps/ui` added to the root
 `package.json` workspaces/scripts and `tsconfig.json` include list.
 
+## Scripted browser checks (`tools/`, baseline commit 280ced5)
+
+`windows/tools/native-hosting-e2e.mjs` and `windows/tools/ui-smoke.mjs` are ported
+to `linux-vm/tools/` with the same structure and assertions, and three recorded
+adaptations: no hardcoded `chrome.exe` path (Playwright's own managed Chromium is
+used instead, since there's no single canonical Chrome path across Linux distros),
+`args: ['--no-sandbox']` (required to launch as a non-root user in this VM), and
+`channel: 'chromium'` (this Playwright version resolves a separate
+`chromium_headless_shell` binary for plain headless launches otherwise). The asset
+path-traversal probe strings changed from a Windows-drive-letter payload
+(`C:secret`) to Linux-relevant ones (`%2Fetc%2Fpasswd`,
+`nested%2F..%2F..%2Fetc%2Fpasswd`) — same intent, OS-appropriate payload. Windows'
+`live-e2e.mjs`, `workload-admission-e2e.mjs`, and `replay-e2e.mjs` were not ported
+(no evidence Windows itself runs them regularly or wires them into CI; out of scope
+for this milestone). `@playwright/test` (`1.63.0`, matching Windows' pinned
+version) is a new `devDependency`.
+
+## L3 (experiments/analysis/Learn): nothing to port
+
+Checked before scaffolding L3: Windows itself has no experiment-execution engine,
+only `ExperimentDefinition`/`ExperimentPhase` contracts (already copied verbatim as
+part of `contracts/v1/*`) and UI nav placeholders in `App.tsx` (already copied
+verbatim apart from the two build-label edits already listed above). Confirmed via
+`diff` against both files — byte-identical outside what's already documented.
+`windows/docs/CURRENT-STATE.md` states this is Windows' own remaining work, not
+something this port skipped. See CURRENT-STATE.md's "L3 investigation" section for
+the full reasoning.
+
 ## Not copied
 
 `apps/ui/`, `agent/`, native build tooling, PowerShell scripts, DiskSpd packaging —

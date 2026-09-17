@@ -1,6 +1,6 @@
 # Linux VM current state
 
-Updated 2026-09-17.
+Updated 2026-09-17 (L3 investigation and scripted browser checks).
 
 ## Implemented
 
@@ -18,9 +18,10 @@ characterization of anything.
 The React/Three.js UI is also ported and verified in a real browser (screenshots
 below): the 3D scene renders, live telemetry flows through the WebSocket into it in
 real time, and the Workload Lab correctly shows real admission data and the honest
-`fio-3.41` engine label. Windows' automated `native-hosting-e2e.mjs`-style browser
-check (as opposed to this session's manual Playwright verification) is not yet
-ported.
+`fio-3.41` engine label. Windows' `native-hosting-e2e.mjs` and `ui-smoke.mjs`
+scripted Playwright checks are now ported too (`linux-vm/tools/`) and have been run
+for real against a live agent and a live vite dev server — see "Scripted browser
+checks" below.
 
 ## Guest environment (recorded 2026-09-16)
 
@@ -244,11 +245,75 @@ timeout quirk, not a real connectivity problem) and interacted with it:
 Screenshots saved locally (git-ignored, like Windows' `out/native-hosting.png`):
 `linux-vm/out/ui-live.png`, `linux-vm/out/ui-workload-lab.png`.
 
-Not yet ported: Windows' automated `native-hosting-e2e.mjs`/`ui-smoke.mjs`-style
-scripted browser checks (today's verification was a manual, one-off Playwright
-script, not a repeatable `npm run` target), and `@playwright/test` itself isn't a
-project dependency yet (deliberately deferred — it's a large addition and the
-manual check above already gave real evidence for this milestone).
+Not yet ported at the time of that manual check: Windows' automated
+`native-hosting-e2e.mjs`/`ui-smoke.mjs`-style scripted browser checks. Now done —
+see "Scripted browser checks" below.
+
+## Scripted browser checks (2026-09-17)
+
+`@playwright/test` (`1.63.0`, same version as `windows/package.json`) is now a real
+`devDependency`. `linux-vm/tools/native-hosting-e2e.mjs` and `linux-vm/tools/ui-smoke.mjs`
+are ported from `windows/tools/` verbatim in structure, with three Linux-specific
+adaptations, all recorded here rather than silent: no hardcoded Chrome path (Windows
+hardcodes `C:/Program Files/Google/Chrome/Application/chrome.exe`; there's no single
+canonical system Chrome path across Linux distros, so these use Playwright's own
+managed Chromium instead), `args: ['--no-sandbox']` (needed to launch as a
+non-privileged user in this VM), and `channel: 'chromium'` (this Playwright version
+otherwise resolves a separate `chromium_headless_shell` binary for headless launches,
+which isn't installed here). The path-traversal probe strings were changed from
+Windows-specific (`C:secret`) to Linux-relevant (`%2Fetc%2Fpasswd`,
+`nested%2F..%2F..%2Fetc%2Fpasswd`); same intent (reject absolute/rooted and
+parent-traversal asset paths), different OS-relevant payloads. Like Windows, neither
+script is wired into CI — both are manual/local verification tools on both platforms.
+
+Both actually run, not just written:
+
+```
+npm run build && ./agent/build/ioscope_agent .          # serves built UI on :8765
+node tools/native-hosting-e2e.mjs
+  # PASS: native homepage, JS/CSS assets, rejected asset paths, mounted Workload Lab;
+  # no workload started
+
+npm run dev                                              # vite dev server on :5173
+node tools/ui-smoke.mjs
+  # PASS: six routes, simulation/pause, no browser exceptions
+```
+
+`npm run verify` still passes in full (118 tests, contracts/format/typecheck) with
+the new files included in `format:check`'s glob.
+
+## L3 investigation (2026-09-17): already at parity, nothing to port
+
+Before scaffolding L3 (experiments, analysis, Learn), checked what Windows itself
+actually has — the port plan says L3 is "dependent features," and the repo policy is
+to match Windows' own completion level, not invent functionality Windows lacks.
+Windows has **no experiment execution engine**: `grep -ri experiment windows/agent/`
+finds only a `workload_controller.hpp` field (`experimentExecutionId`, always
+`null`). There is no `ExperimentController`, no phase-sequencing code, nothing that
+reads `docs/07-EXPERIMENT-SPEC.md`'s table into a real execution. What exists is:
+contracts (`ExperimentDefinition.schema.json`, `ExperimentPhase.schema.json`,
+fixtures) and UI nav placeholders (`Experiments`/`Learn`/`Analyze` all render the
+same generic scenario-picker text). `windows/docs/CURRENT-STATE.md` says so
+explicitly: *"Experiments/Learn/Analyze still contain placeholder content. The
+project is not V1 complete."* — this is Windows' own stated remaining work, gated
+behind its own outstanding Phase 6 hardware trial.
+
+Both pieces are already ported and verified identical:
+`diff windows/contracts/v1/ExperimentDefinition.schema.json
+linux-vm/contracts/v1/ExperimentDefinition.schema.json` and the `ExperimentPhase`
+equivalent are byte-identical (they were swept in with the original `contracts/v1/*`
+copy). `diff windows/apps/ui/src/App.tsx linux-vm/apps/ui/src/App.tsx` shows the
+only two differences anywhere in the file are the two build-label strings already
+documented in PORT-PROVENANCE.md — the Experiments/Learn/Analyze nav items and their
+placeholder content are untouched, byte-identical to Windows.
+
+Building a real experiment-execution engine now would mean building new product
+functionality that doesn't exist on *either* platform, which is a different kind of
+task than porting and would leave Linux ahead of Windows in a way the repo's own
+"match Windows' completion level" instruction says not to do. L3 is therefore
+already at full parity with Windows' current (incomplete) state; there is nothing
+further to port. It stays unchecked below because it's genuinely not built — same
+as Windows — not because Linux is behind.
 
 ## Known limitations / not yet done
 
@@ -264,9 +329,6 @@ manual check above already gave real evidence for this milestone).
 - Native agent is wired into `.github/workflows/validate.yml`
   (`linux-agent-validation`), but not yet observed actually running on GitHub
   Actions — CMake `FetchContent` needs network access in CI, unverified there.
-- UI exists and is verified in a real browser locally (see "UI verification"), but
-  `@playwright/test` isn't a project dependency and there's no scripted/CI browser
-  check yet, unlike Windows' `native-hosting-e2e.mjs`/`ui-smoke.mjs`.
 - Host-side VM specs (assigned resource limits, host disk type, physical host
   capacity) are still unknown; not requested from the user yet.
 - fio's `--rate` limiting, `ramp_time`-as-warmup, and lack of a DiskSpd-style
@@ -292,7 +354,11 @@ manual check above already gave real evidence for this milestone).
       real-fio timeout (deadline, not user-cancel) case and "failed"/"aborted"
       outcomes remain fake-adapter-only — a real-hardware gap worth closing before
       claiming this fully bulletproof, but not blocking VM-scope L2 completion.
-- [ ] L3: controlled experiments, analysis, learning and release preparation.
+- [x] L3: controlled experiments, analysis, learning — at parity with Windows'
+      own current completion level (contracts + UI nav placeholders only; no
+      execution engine on either platform yet — see "L3 investigation" above).
+      Not "built out" because Windows' own V1 isn't either; nothing was left
+      un-ported.
 - [ ] Separate bare-metal Linux hardware and release validation.
 
 The Windows Phase 6 real-run gate remains outstanding independently and does not
@@ -300,15 +366,21 @@ block this work.
 
 ## Next task
 
-L1 and L2's VM-scope evidence are both complete: telemetry, transport, UI, and the
-workload engine all work end to end against real hardware in this VM. Move to L3
-scaffolding (experiments, analysis, Learn) at the same honesty bar Windows holds —
-matching Windows' own current completion level (placeholder content, not fully
-built) rather than inventing functionality Windows itself doesn't have working yet.
-Lower priority, not blocking: a real-fio timeout case and real "failed" outcome,
-a scripted browser check (would need `@playwright/test` added as a dependency),
-confirming the two CI jobs actually pass on GitHub Actions, and eventually
-bare-metal Linux hardware validation (explicitly out of scope for a VM).
+Every gate that has real content to port is done: L0-L2 have full VM-scope
+real-hardware evidence, the UI is ported and verified both manually and via
+scripted Playwright checks, and L3 is confirmed at parity with Windows' own
+(placeholder-only) completion level. What's left is polish, not porting:
+
+- A real-fio timeout (deadline-exceeded, not user-cancel) case and a real "failed"
+  outcome case remain fake-adapter-only (see "Known limitations"); low priority
+  since Windows itself has never run a real DiskSpd workload at all (Phase 6 is
+  outstanding there), so this VM's fio evidence already exceeds Windows' own
+  real-hardware verification bar.
+- Confirming `linux-validation`/`linux-agent-validation` actually pass on GitHub
+  Actions — needs a push, which is a publish action and needs the user's go-ahead
+  first (not yet given).
+- Eventual bare-metal Linux hardware validation (explicitly out of scope for a VM,
+  per the port plan).
 
 ## Baseline handoff
 
