@@ -1,6 +1,7 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7 experiments, Milestone 1 done).
+Updated 2026-09-17 (V1 completion underway: Phase 7A queue-depth sweep proven
+against real fio, Milestones 1-2 done).
 
 ## Implemented
 
@@ -406,10 +407,44 @@ confirmed with the user before starting. Plan: `~/.claude/plans/woolly-waddling-
   restricted-thermal-coverage policy enforced per phase, exactly as it already is
   for single ad hoc workloads. `GET /experiments/active` and `POST
   /experiments/cancel` both correctly return `null` with nothing running.
-- Not yet done: an experiment has not yet actually been *run* end-to-end against
-  real fio (only admission/sequencing logic proven for real; the 3-phase sequence
-  above used `FakeEngine`). That requires the user's explicit opt-in, same as every
-  other real-hardware step so far, and is the next task.
+**Milestone 2 (7A queue-depth sweep, real fio, user opt-in given) — done:**
+
+Ran the real 6-phase queue-depth sweep (QD 1/2/4/8/16/32, 4 KiB random reads, 64 MiB
+working set, 5s measured per phase, `light` intensity, 2s settle) through the actual
+HTTP API (`POST /api/v1/experiments`), polled to completion (~62s wall time,
+overhead beyond the ~40s estimate matches the per-phase preparation cost already
+seen in single-run evidence):
+
+```
+GET /api/v1/experiments/active (final) -> status: completed, currentPhaseOrdinal: 6
+  all 6 phases: outcome completed, distinct real recordingIds
+```
+
+Every phase's `RunRecording` fetched and checked individually: all report
+`experimentExecutionId` matching the execution, `phaseId` matching their own phase,
+`engine: {"name":"fio","version":"fio-3.41"}`, `outcome: "completed"`. Real measured
+summaries per phase (rate-capped by `light` intensity's 32 MiB/s cap, not a
+performance characterization — engineering-validation evidence in a VM):
+
+| QD | IOPS | Read B/s | Latency mean (ms) |
+|---|---|---|---|
+| 1 | 2524 | 10.3 MB/s | 0.33 |
+| 2 | 4517 | 18.5 MB/s | 0.37 |
+| 4 | 7325 | 30.0 MB/s | 0.42 |
+| 8 | 7952 | 32.6 MB/s | 0.88 |
+| 16 | 7693 | 31.5 MB/s | 1.95 |
+| 32 | 6381 | 26.1 MB/s | 4.86 |
+
+This is genuinely the pattern the experiment's own hypothesis describes:
+concurrency raises throughput until the rate cap is reached (QD1→8), then further
+concurrency only adds queueing latency while throughput plateaus and *falls*
+(QD16→32) — a real, honest demonstration of the concept, not a scripted result.
+`ls ~/.local/share/ioscope/scratch/` was empty after completion — all 6 phases'
+owned files and manifests cleaned up correctly, no orphans.
+
+Not yet done: 7B/7C/7D real runs (7A proved the sequencing engine works; those are
+lower-evidence-burden per the plan), the Experiments UI, and cross-phase comparison
+display.
 
 ## Known limitations / not yet done
 
@@ -454,7 +489,8 @@ confirmed with the user before starting. Plan: `~/.claude/plans/woolly-waddling-
       The user then asked to complete V1 itself; see "V1 completion" above,
       now in progress.
 - [ ] Phase 7A-7D (experiments): admission/sequencing engine done (Milestone 1);
-      real fio execution and the UI not yet done.
+      7A (queue-depth sweep) proven end-to-end against real fio, 6 linked phases,
+      real measured evidence (Milestone 2). 7B-7D and the UI not yet done.
 - [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
 - [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
@@ -478,13 +514,13 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 2: run the queue-depth-sweep experiment for real against fio
-(requires the user's explicit opt-in, same as every other real-hardware step),
-proving admission through to a completed multi-phase `ExperimentExecution` with
-linked `RunRecording`s. Then milestones 3-9: 7B/7C generalization, 7D (needs a
-scratch-reuse engine change), 7E capability gate, the Experiments UI, Phase 8
-analyzer, Phase 9 Learn, and Phase 11 polish — each with its own commit and
-real evidence before the next starts, per the plan.
+milestone 3: 7B (block-size sweep) and 7C (buffered/unbuffered) — new
+`ExperimentDefinition`s only, no engine changes expected, proven with one real
+run each. Then milestones 4-9: 7D (needs a scratch-reuse engine change), 7E
+capability gate, the Experiments UI (definition picker, admission preview,
+phase progress, cross-phase comparison), Phase 8 analyzer, Phase 9 Learn, and
+Phase 11 polish — each with its own commit and real evidence before the next
+starts, per the plan.
 
 ## Baseline handoff
 
