@@ -24,13 +24,16 @@ public:
  }
  Json snapshot(){std::lock_guard<std::mutex> lock(mutex_);return snapshot_;}
  Json cancel(){std::lock_guard<std::mutex> lock(mutex_);if(busy_)cancel_.store(true);return snapshot_;}
- Json start(const Json& request){
+ // experimentExecutionId/phaseId default null (an ad hoc workload, not an
+ // experiment phase); ExperimentController passes both when sequencing phases,
+ // reusing this same start() rather than duplicating its metadata construction.
+ Json start(const Json& request,const Json& experimentExecutionId=nullptr,const Json& phaseId=nullptr){
   contracts_.validate("StartWorkloadRequest",request);const std::string requestId=request["requestId"];const auto workload=request["workload"];
   std::lock_guard<std::mutex> lock(mutex_);
   if(auto prior=store_.request(requestId);!prior.is_null()){if(prior["definition"]!=workload)throw std::runtime_error("Request ID already belongs to different controls");return request_snapshot(prior);}
   if(busy_)throw std::runtime_error("A workload is already active");if(worker_.joinable())worker_.join();
   engine_.ready();const auto resources=resources_();const auto approved=admit(workload,resources);if(!approved.allowed())throw std::runtime_error(approved.reasons.front());
-  const auto id=random_id();Json metadata={{"schemaVersion","1.0.0"},{"runId",id},{"origin","live"},{"startedAt",utc_now()},{"endedAt",nullptr},{"inventory",inventory_},{"capabilities",Json::array()},{"workload",workload},{"experimentExecutionId",nullptr},{"phaseId",nullptr},{"engine",engine_.metadata(workload,id)},{"mappingVersion","1.0.0"},{"analyzerVersion","1.0.0"},{"simulatorVersion",nullptr},{"seed",nullptr},{"outcome","running"},{"abortReason",nullptr},{"uiMode","measurement"},{"summaries",Json::array()},{"artifacts",Json::array()}};
+  const auto id=random_id();Json metadata={{"schemaVersion","1.0.0"},{"runId",id},{"origin","live"},{"startedAt",utc_now()},{"endedAt",nullptr},{"inventory",inventory_},{"capabilities",Json::array()},{"workload",workload},{"experimentExecutionId",experimentExecutionId},{"phaseId",phaseId},{"engine",engine_.metadata(workload,id)},{"mappingVersion","1.0.0"},{"analyzerVersion","1.0.0"},{"simulatorVersion",nullptr},{"seed",nullptr},{"outcome","running"},{"abortReason",nullptr},{"uiMode","measurement"},{"summaries",Json::array()},{"artifacts",Json::array()}};
   const auto started=std::chrono::steady_clock::now();auto initial=sample(id,0,0,"preparing",nullptr,workload);initial["safetyEvents"].push_back({{"schemaVersion","1.0.0"},{"eventId",random_id()},{"runId",id},{"elapsedUs",0},{"ruleId","native-admission"},{"action","admit"},{"message","Native reserve, thermal coverage and cumulative write checks passed"},{"evidence",Json::array()}});for(const auto& device:inventory_["devices"]){auto capabilities=Json::array();for(const auto& metric:initial["telemetry"]["measurements"])if(metric["deviceId"]==device["deviceId"])capabilities.push_back({{"metricId",metric["metricId"]},{"status",metric["status"]},{"requiresElevation",false},{"reason",metric["reason"]}});metadata["capabilities"].push_back({{"schemaVersion","1.0.0"},{"deviceId",device["deviceId"]},{"capabilities",capabilities}});}
   contracts_.validate("RunRecording",{{"schemaVersion","1.0.0"},{"metadata",metadata},{"samples",Json::array({initial})}});
   store_.begin_run(requestId,metadata,initial);cancel_.store(false);busy_=true;snapshot_={{"schemaVersion","1.0.0"},{"status",initial["workloadStatus"]},{"workload",workload},{"recordingId",nullptr}};

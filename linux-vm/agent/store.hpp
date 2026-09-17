@@ -25,7 +25,7 @@ class Store {
   };
 public:
   explicit Store(const std::string& path){sqlite3* raw=nullptr;const int code=sqlite3_open_v2(path.c_str(),&raw,SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_FULLMUTEX,nullptr);db_.reset(raw);if(code!=SQLITE_OK)throw std::runtime_error("Cannot open run database");sqlite3_busy_timeout(db_.get(),2000);
-    auto version=prepare("PRAGMA user_version");if(sqlite3_step(version.get())!=SQLITE_ROW||sqlite3_column_int(version.get(),0)>2)throw std::runtime_error("Unsupported database version");version.reset();
+    auto version=prepare("PRAGMA user_version");if(sqlite3_step(version.get())!=SQLITE_ROW||sqlite3_column_int(version.get(),0)>3)throw std::runtime_error("Unsupported database version");version.reset();
     exec("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;");
     Transaction migration(*this);
     exec("CREATE TABLE IF NOT EXISTS recordings(id TEXT PRIMARY KEY,origin TEXT NOT NULL,name TEXT NOT NULL,started TEXT NOT NULL,payload TEXT NOT NULL);"
@@ -33,7 +33,9 @@ public:
       "CREATE TABLE IF NOT EXISTS journal_runs(run_id TEXT PRIMARY KEY REFERENCES workload_requests(run_id),metadata TEXT NOT NULL);"
       "CREATE TABLE IF NOT EXISTS journal_samples(run_id TEXT NOT NULL REFERENCES journal_runs(run_id) ON DELETE CASCADE,sequence INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(run_id,sequence));"
       "CREATE TABLE IF NOT EXISTS artifacts(id TEXT PRIMARY KEY,recording_id TEXT NOT NULL REFERENCES recordings(id) ON DELETE CASCADE,kind TEXT NOT NULL,sha256 TEXT NOT NULL,payload TEXT NOT NULL);"
-      "PRAGMA user_version=2;");migration.commit();}
+      "CREATE TABLE IF NOT EXISTS experiment_executions(id TEXT PRIMARY KEY,definition_id TEXT NOT NULL,started TEXT NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL);"
+      "CREATE TABLE IF NOT EXISTS experiment_requests(request_id TEXT PRIMARY KEY,definition TEXT NOT NULL,execution_id TEXT NOT NULL UNIQUE);"
+      "PRAGMA user_version=3;");migration.commit();}
   // Request tombstones survive history deletion: retrying an old request never starts work.
   nlohmann::json request(const std::string& requestId){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT definition,run_id,status,recording_id FROM workload_requests WHERE request_id=?");bind(stmt.get(),1,requestId);const int rc=sqlite3_step(stmt.get());if(rc==SQLITE_DONE)return nullptr;if(rc!=SQLITE_ROW)throw std::runtime_error("Request lookup failed");return {{"definition",nlohmann::json::parse(text(stmt.get(),0))},{"runId",text(stmt.get(),1)},{"status",nlohmann::json::parse(text(stmt.get(),2))},{"recordingId",sqlite3_column_type(stmt.get(),3)==SQLITE_NULL?nlohmann::json(nullptr):nlohmann::json(text(stmt.get(),3))}};}
   void begin_run(const std::string& requestId,const nlohmann::json& metadata,const nlohmann::json& sample){
@@ -69,5 +71,25 @@ public:
   nlohmann::json list(){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT id,origin,name,started,length(payload) FROM recordings ORDER BY rowid DESC LIMIT 100");auto values=nlohmann::json::array();int rc;while((rc=sqlite3_step(stmt.get()))==SQLITE_ROW)values.push_back({{"id",text(stmt.get(),0)},{"origin",text(stmt.get(),1)},{"name",text(stmt.get(),2)},{"startedAt",text(stmt.get(),3)},{"bytes",sqlite3_column_int64(stmt.get(),4)}});if(rc!=SQLITE_DONE)throw std::runtime_error("History read failed");return values;}
   std::string get(const std::string& id){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT payload FROM recordings WHERE id=?");bind(stmt.get(),1,id);if(sqlite3_step(stmt.get())!=SQLITE_ROW)throw std::runtime_error("Recording not found");return text(stmt.get(),0);}
   void remove(const std::string& id){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("DELETE FROM recordings WHERE id=?");bind(stmt.get(),1,id);if(sqlite3_step(stmt.get())!=SQLITE_DONE)throw std::runtime_error("Run deletion failed");}
+  // Same tombstone pattern as `request()`/`begin_run` for the single-workload
+  // path: retrying an old experiment start request never launches a second
+  // experiment, even after the original execution has finished.
+  nlohmann::json experiment_request(const std::string& requestId){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT definition,execution_id FROM experiment_requests WHERE request_id=?");bind(stmt.get(),1,requestId);const int rc=sqlite3_step(stmt.get());if(rc==SQLITE_DONE)return nullptr;if(rc!=SQLITE_ROW)throw std::runtime_error("Experiment request lookup failed");return {{"definition",nlohmann::json::parse(text(stmt.get(),0))},{"executionId",text(stmt.get(),1)}};}
+  void begin_experiment_request(const std::string& requestId,const nlohmann::json& definition,const std::string& executionId){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("INSERT INTO experiment_requests VALUES(?,?,?)");bind(stmt.get(),1,requestId);bind(stmt.get(),2,definition.dump());bind(stmt.get(),3,executionId);done(stmt.get());}
+  // Experiment executions are a durable progress index, not a wire duplicate of
+  // each phase's RunRecording (those stay in `recordings`, linked by
+  // experimentExecutionId/phaseId). One row is upserted after every phase
+  // transition, so a crash mid-experiment leaves an accurate last-known status.
+  void save_experiment(const nlohmann::json& execution){
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto stmt=prepare("INSERT INTO experiment_executions VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET status=excluded.status,payload=excluded.payload");
+    bind(stmt.get(),1,execution.at("executionId"));bind(stmt.get(),2,execution.at("definitionId"));bind(stmt.get(),3,execution.at("startedAt"));bind(stmt.get(),4,execution.at("status"));bind(stmt.get(),5,execution.dump());done(stmt.get());
+  }
+  nlohmann::json experiment(const std::string& id){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT payload FROM experiment_executions WHERE id=?");bind(stmt.get(),1,id);if(sqlite3_step(stmt.get())!=SQLITE_ROW)throw std::runtime_error("Experiment execution not found");return nlohmann::json::parse(text(stmt.get(),0));}
+  nlohmann::json experiments(){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT id,definition_id,started,status FROM experiment_executions ORDER BY rowid DESC LIMIT 100");auto values=nlohmann::json::array();int rc;while((rc=sqlite3_step(stmt.get()))==SQLITE_ROW)values.push_back({{"executionId",text(stmt.get(),0)},{"definitionId",text(stmt.get(),1)},{"startedAt",text(stmt.get(),2)},{"status",text(stmt.get(),3)}});if(rc!=SQLITE_DONE)throw std::runtime_error("Experiment history read failed");return values;}
+  // Recovery reads every execution still marked "running" from a prior process;
+  // ExperimentController::recover() closes each out as "interrupted" the same
+  // way WorkloadController::recover() closes out an orphaned run journal.
+  nlohmann::json running_experiments(){std::lock_guard<std::mutex> lock(mutex_);auto stmt=prepare("SELECT payload FROM experiment_executions WHERE status='running'");auto values=nlohmann::json::array();int rc;while((rc=sqlite3_step(stmt.get()))==SQLITE_ROW)values.push_back(nlohmann::json::parse(text(stmt.get(),0)));if(rc!=SQLITE_DONE)throw std::runtime_error("Experiment recovery read failed");return values;}
 };
 }

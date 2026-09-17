@@ -43,6 +43,21 @@ public:
      for(const auto& s:value["samples"]){const auto& f=s["telemetry"];require(f["origin"]==metadata["origin"]&&f["runId"]==run&&s["runId"]==run,"Run identity mismatch");metrics(f["measurements"],metadata["origin"]);long long sequence=f["sequence"];require(sequence>previous,"Invalid sample order");previous=sequence;require(s["flow"]["sequence"]==f["sequence"]&&s["flow"]["elapsedUs"]==f["elapsedUs"]&&s["workloadStatus"]["elapsedUs"]==f["elapsedUs"],"Snapshot clocks differ");for(auto& m:f["measurements"])require(devices.contains(m["deviceId"]),"Unknown device");}
 
    }
+   if(name=="ExperimentExecution"){
+     require((value["status"]=="running")==value["endedAt"].is_null(),"Terminal timestamp mismatch");
+     const auto& phases=value["phases"];const std::size_t total=phases.size();
+     require(value["currentPhaseOrdinal"].get<std::size_t>()<=total,"Phase cursor out of range");
+     const auto cursor=value["currentPhaseOrdinal"].get<std::size_t>();
+     bool allCompleted=true;
+     for(std::size_t i=0;i<total;i++){
+       const auto& phase=phases[i];require(phase["ordinal"].get<std::size_t>()==i,"Phase ordinal out of order");
+       const bool started=i<cursor;
+       require(started==!phase["runId"].is_null(),"Phase run linkage does not match execution progress");
+       require(phase["runId"].is_null()==phase["outcome"].is_null(),"Phase run/outcome linkage mismatch");
+       if(started&&phase["outcome"]!="completed")allCompleted=false;
+     }
+     require(value["status"]!="completed"||(cursor==total&&allCompleted),"Completed execution must finish every phase");
+   }
  }
 };
 }

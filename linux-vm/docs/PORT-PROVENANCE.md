@@ -154,6 +154,20 @@ verbatim apart from the two build-label edits already listed above). Confirmed v
 something this port skipped. See CURRENT-STATE.md's "L3 investigation" section for
 the full reasoning.
 
+## Phase 7 (experiments): new, no Windows equivalent to port
+
+`agent/experiment_controller.hpp`, its `ExperimentAdmission`/`StartExperimentRequest`/
+`ExperimentExecution` contract additions, and the `experiment_executions`/
+`experiment_requests` `Store` tables are genuinely new — not ported from Windows,
+since Windows never built Phase 7 either (its own Phase 6 hardware gate is still
+outstanding, and `windows/AGENTS.md` says "do not implement later phases while
+their prerequisite gates fail"). Built Linux-only at the user's explicit direction
+after confirming this; see CURRENT-STATE.md's "V1 completion" section. Reuses
+`WorkloadController`/`Contracts`/`Store` exactly as designed for the single-workload
+path (one surgical addition: `WorkloadController::start()` takes an optional
+experiment-context pair), following the same interfaces a future Windows Phase 7
+implementation would also need, once Windows' own Phase 6 passes.
+
 ## Not copied
 
 `apps/ui/`, `agent/`, native build tooling, PowerShell scripts, DiskSpd packaging —

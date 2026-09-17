@@ -74,6 +74,9 @@ export interface DomainTypes {
   WorkloadAdmission: WorkloadAdmission;
   StartWorkloadRequest: StartWorkloadRequest;
   WorkloadSnapshot: WorkloadSnapshot;
+  ExperimentAdmission: ExperimentAdmission;
+  StartExperimentRequest: StartExperimentRequest;
+  ExperimentExecution: ExperimentExecution;
   ArtifactPayload: ArtifactPayload;
 }
 /**
@@ -475,6 +478,67 @@ export interface WorkloadSnapshot {
   status: WorkloadStatus | null;
   workload: WorkloadDefinition | null;
   recordingId: string | null;
+}
+/**
+ * This interface was referenced by `DomainTypes`'s JSON-Schema
+ * via the `definition` "ExperimentAdmission".
+ */
+export interface ExperimentAdmission {
+  schemaVersion: '1.0.0';
+  definition: ExperimentDefinition;
+  allowed: boolean;
+  /**
+   * @maxItems 32
+   */
+  reasons: string[];
+  totalWriteBytes: number;
+  totalWallSeconds: number;
+  engineReady: boolean;
+  engineVersion: string;
+  /**
+   * @maxItems 32
+   */
+  phaseAdmissions: WorkloadAdmission[];
+}
+/**
+ * This interface was referenced by `DomainTypes`'s JSON-Schema
+ * via the `definition` "StartExperimentRequest".
+ */
+export interface StartExperimentRequest {
+  schemaVersion: '1.0.0';
+  requestId: string;
+  definition: ExperimentDefinition;
+}
+/**
+ * This interface was referenced by `DomainTypes`'s JSON-Schema
+ * via the `definition` "ExperimentExecution".
+ */
+export interface ExperimentExecution {
+  schemaVersion: '1.0.0';
+  executionId: string;
+  definitionId: string;
+  startedAt: string;
+  endedAt: string | null;
+  status: 'running' | 'completed' | 'cancelled' | 'aborted' | 'failed' | 'interrupted';
+  currentPhaseOrdinal: number;
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  phases: [
+    {
+      phaseId: string;
+      ordinal: number;
+      runId: string | null;
+      outcome: ('running' | 'completed' | 'cancelled' | 'aborted' | 'failed' | 'interrupted') | null;
+    },
+    ...{
+      phaseId: string;
+      ordinal: number;
+      runId: string | null;
+      outcome: ('running' | 'completed' | 'cancelled' | 'aborted' | 'failed' | 'interrupted') | null;
+    }[]
+  ];
 }
 /**
  * This interface was referenced by `DomainTypes`'s JSON-Schema

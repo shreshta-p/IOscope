@@ -1,6 +1,6 @@
 # Linux VM current state
 
-Updated 2026-09-17 (L3 investigation, scripted browser checks, real fio failure proof).
+Updated 2026-09-17 (V1 completion underway: Phase 7 experiments, Milestone 1 done).
 
 ## Implemented
 
@@ -346,6 +346,71 @@ already at full parity with Windows' current (incomplete) state; there is nothin
 further to port. It stays unchecked below because it's genuinely not built — same
 as Windows — not because Linux is behind.
 
+## V1 completion: Experiments (Phase 7), in progress (2026-09-17)
+
+After the Linux port reached parity with Windows (L0-L3 above), the user asked to
+complete the rest of V1 (Windows' own `docs/COMPLETION.md` Phases 7-11: experiments,
+deterministic analyzer, contextual Learn, optional Ask, packaging) rather than stop
+at parity. Since this VM has no Windows toolchain and Windows' own Phase 6 hardware
+gate is still outstanding, this work proceeds **Linux-only** (Windows stays
+untouched at Phase 5), skips the GPU pipeline experiment's execution code (7E,
+capability-gated only — no GPU in this VM), and defers Phase 10 ("Ask") — all
+confirmed with the user before starting. Plan: `~/.claude/plans/woolly-waddling-kahan.md`.
+
+**Milestone 1 (contracts + admission plumbing) — done, real HTTP evidence:**
+
+- Three new additive `$defs` in `contracts/v1/domain.schema.json`: `ExperimentAdmission`,
+  `StartExperimentRequest`, `ExperimentExecution` (a lightweight progress/index
+  record — each phase is still an ordinary `RunRecording` linked by the existing
+  `experimentExecutionId`/`phaseId` fields, not a wire duplicate). New fixtures for
+  all three; `contract_tests` fixture count went from 24 to 27 automatically.
+- New semantic validation in `contracts.hpp` for `ExperimentExecution`: phase
+  ordinals must match array order, a phase's `runId`/`outcome` must be non-null iff
+  its index is before `currentPhaseOrdinal`, and `status:"completed"` requires every
+  phase actually completed.
+- `WorkloadController::start()` gained an optional `(experimentExecutionId, phaseId)`
+  parameter pair (default null,null) rather than duplicating its ~15-field metadata
+  construction in a second place.
+- `Store` gained `experiment_executions` and `experiment_requests` tables
+  (`user_version` 2→3) with upsert/read/list/recovery methods, mirroring the
+  existing `journal_runs`/`workload_requests` pattern.
+- New `agent/experiment_controller.hpp`: `ExperimentController` reuses the *same*
+  `WorkloadController` instance phase-by-phase (per
+  `docs/plans/PHASE-6-WORKLOADS.md`: "each phase uses the same admitted
+  controller"), getting the one-experiment-at-a-time invariant for free from
+  `WorkloadController::busy_`/`Store`'s single-row journal constraint. Aggregate
+  admission calls `admit()` per phase with a running `alreadyWritten` total (an
+  existing parameter that was already present but previously always called with
+  its default `0`), plus a 600s total-wall-time cap (`08-SAFETY-SPEC.md`:
+  "experiment <=600s") — both checked *before* any phase starts, matching
+  "reject before allocating." Settling sleeps between phases with no sampling
+  ("no benchmark samples ... in statistics"). Cancellation stops the in-progress
+  phase (via `WorkloadController::cancel()`) and prevents any further phase from
+  starting ("stop cancels current and future phases").
+- New `POST /api/v1/experiments/admission`, `POST /api/v1/experiments`,
+  `GET /api/v1/experiments/active`, `POST /api/v1/experiments/cancel` routes.
+- New `experiment_controller_tests.cpp` (`FakeEngine`, mirroring
+  `workload_controller_tests.cpp`'s style): proves aggregate admission, a single
+  denied phase denying the whole experiment, the 600s aggregate-wall-time
+  rejection, a full 3-phase sequence with correct `experimentExecutionId`/`phaseId`
+  linkage on each phase's real `RunRecording`, requestId idempotency, cancellation
+  stopping future phases, and recovery of an orphaned "running" execution as
+  "interrupted." All 11 native test binaries pass (`ctest`).
+- Verified against the real running agent, not just tests: `POST
+  /api/v1/experiments/admission` with a real 6-phase queue-depth-sweep definition
+  (QD 1/2/4/8/16/32, 4 KiB random read, 64 MiB working set, 5s each) at `light`
+  intensity returns `allowed:true`, correct aggregate `totalWallSeconds:40` and
+  `totalWriteBytes`, and a full per-phase `phaseAdmissions` breakdown; the same
+  definition at `moderate` intensity is correctly denied per phase with "Missing
+  CPU/SSD temperatures require light intensity and at most 15 seconds" — the
+  restricted-thermal-coverage policy enforced per phase, exactly as it already is
+  for single ad hoc workloads. `GET /experiments/active` and `POST
+  /experiments/cancel` both correctly return `null` with nothing running.
+- Not yet done: an experiment has not yet actually been *run* end-to-end against
+  real fio (only admission/sequencing logic proven for real; the 3-phase sequence
+  above used `FakeEngine`). That requires the user's explicit opt-in, same as every
+  other real-hardware step so far, and is the next task.
+
 ## Known limitations / not yet done
 
 - Python-based cross-language fixture validation
@@ -384,11 +449,16 @@ as Windows — not because Linux is behind.
       intensity by the correctly-enforced missing-thermal-coverage policy). Only
       "aborted" (mid-run safety-watchdog breach) remains fake-adapter-only, by
       design — see "Known limitations."
-- [x] L3: controlled experiments, analysis, learning — at parity with Windows'
-      own current completion level (contracts + UI nav placeholders only; no
-      execution engine on either platform yet — see "L3 investigation" above).
-      Not "built out" because Windows' own V1 isn't either; nothing was left
-      un-ported.
+- [x] L3 parity checkpoint (superseded): confirmed Linux matched Windows'
+      placeholder-only Experiments/Learn/Analyze state — see "L3 investigation."
+      The user then asked to complete V1 itself; see "V1 completion" above,
+      now in progress.
+- [ ] Phase 7A-7D (experiments): admission/sequencing engine done (Milestone 1);
+      real fio execution and the UI not yet done.
+- [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
+- [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
+- [ ] Phase 10 (Ask): deferred at the user's request.
+- [ ] Phase 11 (packaging/polish): not started.
 - [ ] Separate bare-metal Linux hardware and release validation.
 
 The Windows Phase 6 real-run gate remains outstanding independently and does not
@@ -407,17 +477,14 @@ dependency resolved fine in that environment.
 
 ## Next task
 
-Every gate with real content to port is done and now independently confirmed
-on GitHub Actions, not just this VM: L0-L2 have full real-hardware evidence
-(completed/cancelled/interrupted/failed outcomes all proven against real fio;
-only the "aborted" safety-watchdog path is fake-adapter-only, by design), the
-UI is ported and verified both manually and via scripted Playwright checks,
-and L3 is confirmed at parity with Windows' own (placeholder-only) completion
-level. This VM's real-fio evidence already exceeds Windows' own real-hardware
-verification bar (Windows' Phase 6 real-DiskSpd-run gate remains outstanding
-there). What's left is explicitly out of scope for this port, not deferred
-work: eventual bare-metal Linux hardware validation (per the port plan, VM
-evidence does not pass a physical-hardware gate).
+Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
+milestone 2: run the queue-depth-sweep experiment for real against fio
+(requires the user's explicit opt-in, same as every other real-hardware step),
+proving admission through to a completed multi-phase `ExperimentExecution` with
+linked `RunRecording`s. Then milestones 3-9: 7B/7C generalization, 7D (needs a
+scratch-reuse engine change), 7E capability gate, the Experiments UI, Phase 8
+analyzer, Phase 9 Learn, and Phase 11 polish — each with its own commit and
+real evidence before the next starts, per the plan.
 
 ## Baseline handoff
 

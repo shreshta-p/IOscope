@@ -1656,6 +1656,198 @@
       ],
       "additionalProperties": false
     },
+    "ExperimentAdmission": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "definition": {
+          "$ref": "#/$defs/ExperimentDefinition"
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "maxItems": 32
+        },
+        "totalWriteBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "totalWallSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "engineReady": {
+          "type": "boolean"
+        },
+        "engineVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "phaseAdmissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WorkloadAdmission"
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "definition",
+        "allowed",
+        "reasons",
+        "totalWriteBytes",
+        "totalWallSeconds",
+        "engineReady",
+        "engineVersion",
+        "phaseAdmissions"
+      ],
+      "additionalProperties": false
+    },
+    "StartExperimentRequest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "requestId": {
+          "type": "string",
+          "pattern": "^[a-f0-9-]{32,48}$"
+        },
+        "definition": {
+          "$ref": "#/$defs/ExperimentDefinition"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "requestId",
+        "definition"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentExecution": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "executionId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "definitionId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "running",
+            "completed",
+            "cancelled",
+            "aborted",
+            "failed",
+            "interrupted"
+          ]
+        },
+        "currentPhaseOrdinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phaseId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+              },
+              "ordinal": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 31
+              },
+              "runId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{32}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "outcome": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "running",
+                      "completed",
+                      "cancelled",
+                      "aborted",
+                      "failed",
+                      "interrupted"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "phaseId",
+              "ordinal",
+              "runId",
+              "outcome"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "executionId",
+        "definitionId",
+        "startedAt",
+        "endedAt",
+        "status",
+        "currentPhaseOrdinal",
+        "phases"
+      ],
+      "additionalProperties": false
+    },
     "ArtifactPayload": {
       "type": "object",
       "properties": {

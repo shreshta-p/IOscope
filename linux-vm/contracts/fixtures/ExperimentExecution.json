@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "executionId": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "definitionId": "qd-fixture",
+  "startedAt": "2026-09-17T00:00:00.000Z",
+  "endedAt": "2026-09-17T00:00:20.000Z",
+  "status": "completed",
+  "currentPhaseOrdinal": 1,
+  "phases": [
+    {
+      "phaseId": "qd8",
+      "ordinal": 0,
+      "runId": "cccccccccccccccccccccccccccccccc",
+      "outcome": "completed"
+    }
+  ]
+}

@@ -10,6 +10,7 @@
 #include "system_resources.hpp"
 #include "workload_engine.hpp"
 #include "workload_controller.hpp"
+#include "experiment_controller.hpp"
 #include <fcntl.h>
 #include <sys/file.h>
 #include <cstdlib>
@@ -52,9 +53,11 @@ int main(int argc,char** argv){try{
  auto latest=telemetry.sample();auto latestAt=std::chrono::steady_clock::now();std::mutex liveMutex;
  ioscope::FioEngine engine(find_fio());
  auto observed=[&]{std::lock_guard<std::mutex> lock(liveMutex);return ioscope::RecordedFrame{latest,std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-latestAt)};};
- ioscope::WorkloadController workloads(contracts,store,engine,telemetry.inventory(),ioscope::read_json(root/"contracts/flow-semantics.v1.json"),[&]{const auto value=observed();return ioscope::system_resources(value.frame,value.age);},observed);
+ const auto resourcesFn=[&]{const auto value=observed();return ioscope::system_resources(value.frame,value.age);};
+ ioscope::WorkloadController workloads(contracts,store,engine,telemetry.inventory(),ioscope::read_json(root/"contracts/flow-semantics.v1.json"),resourcesFn,observed);
+ ioscope::ExperimentController experiments(contracts,store,workloads,engine,resourcesFn);
  try{const auto scratchRoot=ioscope::local_directory()/"scratch";if(std::filesystem::exists(scratchRoot)){ioscope::reject_symlink_ancestors(scratchRoot);std::vector<std::string> ids;for(const auto& entry:std::filesystem::directory_iterator(scratchRoot))ids.push_back(entry.path().filename().string());for(const auto& id:ids)try{ioscope::recover_scratch(id);}catch(const std::exception& error){std::cerr<<"Scratch preserved: "<<error.what()<<"\n";}}}catch(const std::exception& error){std::cerr<<"Scratch recovery unavailable: "<<error.what()<<"\n";}
- workloads.recover();
+ workloads.recover();experiments.recover();
  crow::App<ioscope::Security> app;
  app.bindaddr("127.0.0.1").port(8765).concurrency(2).websocket_max_payload(65536);
  auto& security=app.get_middleware<ioscope::Security>();
@@ -67,6 +70,10 @@ int main(int argc,char** argv){try{
  CROW_ROUTE(app,"/api/v1/runs").methods(crow::HTTPMethod::Post)([&](const crow::request& request){try{return respond(workloads.start(ioscope::parse_command(request.body)));}catch(const std::exception& error){return failure(error);}});
  CROW_ROUTE(app,"/api/v1/runs/active")([&]{return respond(workloads.snapshot());});
  CROW_ROUTE(app,"/api/v1/runs/cancel").methods(crow::HTTPMethod::Post)([&]{return respond(workloads.cancel());});
+ CROW_ROUTE(app,"/api/v1/experiments/admission").methods(crow::HTTPMethod::Post)([&](const crow::request& request){try{return respond(experiments.admission(ioscope::parse_command(request.body)));}catch(const std::exception& error){return failure(error);}});
+ CROW_ROUTE(app,"/api/v1/experiments").methods(crow::HTTPMethod::Post)([&](const crow::request& request){try{return respond(experiments.start(ioscope::parse_command(request.body)));}catch(const std::exception& error){return failure(error);}});
+ CROW_ROUTE(app,"/api/v1/experiments/active")([&]{return respond(experiments.snapshot());});
+ CROW_ROUTE(app,"/api/v1/experiments/cancel").methods(crow::HTTPMethod::Post)([&]{return respond(experiments.cancel());});
  CROW_ROUTE(app,"/api/v1/artifacts/<string>")([&](const std::string& id){try{if(id.size()!=48||id.find_first_not_of("0123456789abcdef")!=std::string::npos)throw std::runtime_error("Invalid artifact ID");return respond(store.artifact(id));}catch(const std::exception& error){return failure(error);}});
  CROW_ROUTE(app,"/api/v1/capabilities")([&]{std::lock_guard<std::mutex> lock(liveMutex);auto result=ioscope::Json::array();const auto inventory=telemetry.inventory();for(const auto& device:inventory["devices"]){auto entries=ioscope::Json::array();for(const auto& metric:latest["measurements"])if(metric["deviceId"]==device["deviceId"])entries.push_back({{"metricId",metric["metricId"]},{"status",metric["status"]},{"requiresElevation",false},{"reason",metric["reason"]}});result.push_back({{"schemaVersion","1.0.0"},{"deviceId",device["deviceId"]},{"capabilities",entries}});}return respond(result);});
  struct Client{bool authenticated=false;std::optional<unsigned long long> pending;std::chrono::steady_clock::time_point deadline=std::chrono::steady_clock::now()+std::chrono::seconds(2);};

@@ -142,6 +142,13 @@ target_link_libraries(ioscope_workload_controller_tests PRIVATE ioscope_native_d
 add_test(NAME workload_controller_tests COMMAND ioscope_workload_controller_tests "${CMAKE_CURRENT_SOURCE_DIR}/../contracts" "${CMAKE_CURRENT_BINARY_DIR}/native-test-recordings.json")
 set_tests_properties(workload_controller_tests PROPERTIES TIMEOUT 15)
 
+add_executable(ioscope_experiment_controller_tests experiment_controller_tests.cpp)
+target_compile_features(ioscope_experiment_controller_tests PRIVATE cxx_std_20)
+target_compile_options(ioscope_experiment_controller_tests PRIVATE ${IOSCOPE_WARNINGS} "-isystem${json_SOURCE_DIR}/single_include" "-isystem${jsoncons_SOURCE_DIR}/include")
+target_link_libraries(ioscope_experiment_controller_tests PRIVATE ioscope_native_dependencies)
+add_test(NAME experiment_controller_tests COMMAND ioscope_experiment_controller_tests "${CMAKE_CURRENT_SOURCE_DIR}/../contracts")
+set_tests_properties(experiment_controller_tests PROPERTIES TIMEOUT 30)
+
 add_executable(ioscope_prepare prepare.cpp)
 target_compile_features(ioscope_prepare PRIVATE cxx_std_20)
 target_compile_options(ioscope_prepare PRIVATE ${IOSCOPE_WARNINGS} "-isystem${json_SOURCE_DIR}/single_include")
