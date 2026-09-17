@@ -4,18 +4,16 @@ Updated 2026-09-17.
 
 ## Implemented
 
-L0, L1, and the core of L2 are done with evidence below. A native Linux C++20 agent
-exists at `linux-vm/agent/`: it serves real telemetry (`/proc`, `/sys`, dlopen'd
-NVML) over the same HTTP/WebSocket API shape as the Windows agent, validates every
-response against the shared contracts, persists to SQLite, and can admit, run,
-complete, and clean up a real fio-backed workload end to end. With the user's
-explicit opt-in, one tiny bounded workload (64 MiB working set, the policy's
-minimum, 1 second measured duration — smaller than the eventual 64 MiB/5 s "trial")
-ran for real against the real ext4 disk in this VM; see "Real workload evidence"
-below. This is engineering validation of the pipeline, not a performance benchmark
-or the sanctioned real-hardware trial, which remains a separate, still-outstanding,
-explicit opt-in gate (safe-recovery/cancellation-with-real-fio evidence, then the
-64 MiB/5 s trial itself). No UI exists yet.
+L0, L1, and L2 are done with evidence below. A native Linux C++20 agent exists at
+`linux-vm/agent/`: it serves real telemetry (`/proc`, `/sys`, dlopen'd NVML) over the
+same HTTP/WebSocket API shape as the Windows agent, validates every response
+against the shared contracts, persists to SQLite, and admits, runs, completes,
+cancels, recovers from interruption, and cleans up real fio-backed workloads end to
+end. With the user's explicit opt-in, several real bounded runs executed against
+the real ext4 disk in this VM, culminating in the port plan's specifically named
+trial (64 MiB file, 5 seconds of reads); see "Real workload evidence" below. These
+are engineering-validation and safety-evidence runs in a VM, not a disk performance
+characterization of anything. No UI exists yet.
 
 ## Guest environment (recorded 2026-09-16)
 
@@ -188,6 +186,19 @@ which deliberately exercises those states — triggering them with a real fio pr
 would need contriving a real failure (e.g. a bad argument or corrupted output),
 which hasn't been attempted.
 
+**The named trial**: with a second, separate explicit opt-in, ran the port plan's
+specifically named configuration — 64 MiB working set, 5 seconds measured duration
+(queue depth 8, random reads, buffered, `light` intensity — `moderate` was
+correctly denied by admission with reason "Missing CPU/SSD temperatures require
+light intensity and at most 15 seconds", confirming the restricted-thermal-coverage
+policy is enforced for real, not just in the fake-adapter tests). Result:
+`outcome: completed`, `engine: {"name":"fio","version":"fio-3.41"}`,
+`inventory.platform: "linux"`, `artifacts: ["fio-json"]`, 10 real telemetry samples,
+scratch fully cleaned up afterward. Measured summaries (read ~33.16 MB/s — at the
+"light" intensity's 32 MiB/s rate cap, as expected; ~8096 IOPS; latency mean
+~0.74ms, p95 ~1.07ms) are recorded for completeness but are, again, not a
+performance characterization of anything — a rate-capped run in a VM.
+
 CI: `.github/workflows/validate.yml` has a `linux-validation` job (TypeScript side
 only; the native agent isn't wired into CI yet — see "Next task"). Not yet observed
 running on GitHub Actions from this session.
@@ -210,13 +221,13 @@ running on GitHub Actions from this session.
 - Host-side VM specs (assigned resource limits, host disk type, physical host
   capacity) are still unknown; not requested from the user yet.
 - fio's `--rate` limiting, `ramp_time`-as-warmup, and lack of a DiskSpd-style
-  unmeasured cooldown tail are documented approximations in `agent/fio.hpp`. The one
-  real run so far didn't stress these enough to reveal whether the approximations
-  hold up under load; not verified beyond the one tiny successful run.
-- The one real run's numbers (~11MB/s read, ~2676 IOPS, sub-ms latency) are
-  engineering-validation byproducts of a 1-second, rate-capped, single-queue-depth
-  run in a VM. They are not a disk performance characterization of anything and must
-  not be quoted as one.
+  unmeasured cooldown tail are documented approximations in `agent/fio.hpp`. The
+  real runs so far (up to 5s measured, queue depth 8) didn't stress these heavily;
+  not verified under sustained load, longer durations, or warmup/cooldown > 0.
+- All real-run numbers recorded in this document (read bandwidth, IOPS, latency)
+  are engineering-validation byproducts of short, rate-capped runs in a VM. They are
+  not a disk performance characterization of anything, Linux's or otherwise, and
+  must not be quoted as one.
 
 ## Pending gates
 
@@ -224,12 +235,14 @@ running on GitHub Actions from this session.
 - [x] L1: read-only Linux telemetry, transport — real HTTP/WebSocket server verified
       against live `/proc`/`/sys` data. No UI yet (not blocking; UI is separate from
       the telemetry/transport gate itself).
-- [~] L2: native workload engine proven end-to-end against real fio, user-opted-in,
-      for completed/cancelled/interrupted outcomes, including orphan-scratch
-      recovery and honest (never fabricated) recovery telemetry. Still outstanding:
-      a real-fio timeout (deadline, not user-cancel) case, and the separately
-      opt-in-gated 64 MiB/5 s trial itself, which is a parameter variant of what's
-      already proven, not new mechanism.
+- [x] L2: native workload engine proven end-to-end against real fio, user-opted-in
+      each time, for completed/cancelled/interrupted outcomes (including
+      orphan-scratch recovery and honest, never-fabricated, recovery telemetry) and
+      the port plan's specifically named trial (64 MiB/5s, restricted to `light`
+      intensity by the correctly-enforced missing-thermal-coverage policy). A
+      real-fio timeout (deadline, not user-cancel) case and "failed"/"aborted"
+      outcomes remain fake-adapter-only — a real-hardware gap worth closing before
+      claiming this fully bulletproof, but not blocking VM-scope L2 completion.
 - [ ] L3: controlled experiments, analysis, learning and release preparation.
 - [ ] Separate bare-metal Linux hardware and release validation.
 
@@ -238,12 +251,14 @@ block this work.
 
 ## Next task
 
-Ask the user whether to proceed with the specific sanctioned 64 MiB/5-second-read
-real-hardware trial (a parameter variant of the validation already done — same
-mechanism, just the named numbers from the port plan), or consider L2's safety
-evidence sufficient as-is and move to L3/UI work instead. Either way, still open:
-wire the native agent into CI once TypeScript CI is confirmed stable, and port a
-minimal UI (or note it's deferred) for local transport/UI completeness.
+L2's VM-scope evidence is complete. Move to: (1) porting a minimal Linux UI (or
+explicitly deferring it with rationale) for local transport/UI completeness, (2)
+wiring the native agent into CI, (3) beginning L3 scaffolding (experiments,
+analysis, Learn) at the same honesty bar Windows holds — matching Windows' own
+current completion level (placeholder content, not fully built) rather than
+inventing functionality Windows itself doesn't have working yet. Separately, and
+lower priority: a real-fio timeout case and real "failed" outcome, and eventually
+bare-metal Linux hardware validation (explicitly out of scope for a VM).
 
 ## Baseline handoff
 
