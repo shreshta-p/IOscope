@@ -10,6 +10,7 @@
 // for free from WorkloadController::busy_ and Store's journal_runs single-row
 // constraint, with no new run-concurrency logic needed here.
 #include "workload_controller.hpp"
+#include "gpu_capability.hpp"
 #include <thread>
 #include <atomic>
 #include <chrono>
@@ -43,6 +44,13 @@ class ExperimentController {
   // worker loop, which only sleeps settleSeconds when a next phase exists.
   if(!definition.at("phases").empty())result.totalWallSeconds-=definition.at("phases").back().at("settleSeconds").get<std::uint64_t>();
   if(result.totalWallSeconds>600)result.reasons.push_back("Experiment exceeds the 600 second wall-time budget, including settling");
+  // 7E (storage-to-GPU pipeline): capability-gated, no execution engine exists
+  // (see gpu_capability.hpp). Each phase's own admit() already denies the
+  // "gpu-pipeline" engine generically; this adds the specific, honest reason
+  // -- "unsupported hardware disables only this experiment," not the app.
+  if(definition.at("variable")=="pipelineStage")result.reasons.push_back(
+   std::string("GPU pipeline execution is not implemented on this platform; CUDA capability probe reports ")+
+   (cuda_available()?"a CUDA-capable device present, but no execution engine exists yet":"no CUDA-capable device detected"));
   return result;
  }
 public:

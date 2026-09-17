@@ -1,7 +1,7 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7A-7D all proven against real
-fio, Milestones 1-4 done).
+Updated 2026-09-17 (V1 completion underway: all of Phase 7 (7A-7E) done,
+Milestones 1-5 complete).
 
 ## Implemented
 
@@ -520,8 +520,35 @@ present in `~/.local/share/ioscope/scratch/` throughout both phases and empty
 immediately after phase two completed — the shared-dataset lifecycle working
 exactly as designed.
 
-Not yet done: the Experiments UI and cross-phase comparison display (7E's
-capability gate is next).
+**Milestone 5 (7E capability gate, no execution code) — done:** new
+`agent/gpu_capability.hpp`: `cuda_available()` probes the real CUDA driver API
+(`dlopen`'d `libcuda.so`/`libcuda.so.1`, resolving and calling `cuInit`/
+`cuDeviceGetCount`) rather than trusting NVML, per spec ("NVML alone does not
+establish CUDA availability") — dlopen'd, not linked, so the agent still builds
+and runs on a machine with no CUDA driver installed at all, honestly returning
+`false` here (no GPU in this VM). No execution engine was written, per the
+user's explicit direction — writing untestable CUDA code would violate "never
+mark untested gates complete."
+
+Wired in two places: `ExperimentController::plan()` adds a specific reason for
+any `variable=="pipelineStage"` experiment (each phase's own `admit()` already
+denies the `gpu-pipeline` engine generically; this adds the honest, specific
+one), and `/api/v1/bootstrap` gained a `gpuPipeline` capability flag so the UI
+can show this without needing a full admission round-trip. Verified for real:
+
+```
+GET /api/v1/bootstrap -> "gpuPipeline": false
+POST /api/v1/experiments/admission (a gpu-pipeline stage) ->
+  allowed: false, reasons:
+    "stage0: Requested engine is not available"
+    "GPU pipeline execution is not implemented on this platform;
+     CUDA capability probe reports no CUDA-capable device detected"
+```
+
+New `experiment_controller_tests.cpp` coverage asserts the capability-probe
+reason is present in the denial. All 11 native tests pass.
+
+Not yet done: the Experiments UI and cross-phase comparison display.
 
 ## Known limitations / not yet done
 
@@ -565,10 +592,13 @@ capability gate is next).
       placeholder-only Experiments/Learn/Analyze state — see "L3 investigation."
       The user then asked to complete V1 itself; see "V1 completion" above,
       now in progress.
-- [ ] Phase 7A-7D (experiments): all four experiment types (queue-depth sweep,
+- [x] Phase 7A-7D (experiments): all four experiment types (queue-depth sweep,
       block-size sweep, buffered/unbuffered, first/repeated access) proven
       end-to-end against real fio with linked phases and real measured evidence
-      (Milestones 1-4). The Experiments UI is not yet done.
+      (Milestones 1-4).
+- [x] Phase 7E (GPU pipeline): capability-gated (real CUDA driver probe, no
+      execution engine) per the user's direction (Milestone 5).
+- [ ] Experiments UI: not yet done.
 - [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
 - [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
@@ -592,12 +622,11 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 5: 7E's capability gate (a CUDA-presence probe reporting the GPU
-pipeline experiment unsupported on this VM — no execution code, per the user's
-direction). Then milestones 6-9: the Experiments UI (definition picker,
-admission preview, phase progress, cross-phase comparison), Phase 8 analyzer,
-Phase 9 Learn, and Phase 11 polish — each with its own commit and real evidence
-before the next starts, per the plan.
+milestone 6: the Experiments UI (definition picker, aggregate admission
+preview, phase progress, cross-phase comparison) — all agent-side work for
+Phase 7 (7A-7E) is done. Then milestones 7-9: Phase 8 analyzer, Phase 9 Learn,
+and Phase 11 polish — each with its own commit and real evidence before the
+next starts, per the plan.
 
 ## Baseline handoff
 

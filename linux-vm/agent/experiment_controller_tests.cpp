@@ -93,6 +93,19 @@ int main(int argc,char** argv){try{
  if(engine.seenPrepare[0]!=true||engine.seenPrepare[1]!=false)throw std::runtime_error("Access-pass prepare flags wrong: first pass must prepare, repeated pass must reuse");
  if(engine.seenCleanup[0]!=false||engine.seenCleanup[1]!=true)throw std::runtime_error("Access-pass cleanup flags wrong: first pass must keep the dataset, repeated pass must clean it up");
 
+ // 7E: capability-gated, no execution engine. Denied with a specific, honest
+ // reason -- never silently accepted, never claiming GPU work is supported.
+ auto gpuWorkload=baseWorkload;gpuWorkload["engine"]="gpu-pipeline";
+ Json gpuDefinition={{"schemaVersion","1.0.0"},{"definitionId","gpu-pipeline-test"},{"title","Storage-to-GPU pipeline (test)"},
+  {"question","Does staged host-to-device transfer add measurable overhead?"},{"concept","Explicit staged transfer, not DirectStorage."},
+  {"variable","pipelineStage"},{"hypothesis","Host-to-device transfer adds a measurable, separately timed phase."},
+  {"phases",Json::array({{{"schemaVersion","1.0.0"},{"phaseId","stage0"},{"ordinal",0},{"purpose","Observe host-to-device transfer"},
+   {"workload",gpuWorkload},{"observe",Json::array({"storage.read.bytes_per_second"})},{"settleSeconds",0}}})}};
+ auto gpuAdmission=experiments.admission(gpuDefinition);
+ if(gpuAdmission["allowed"]!=false)throw std::runtime_error("GPU pipeline experiment was admitted without an execution engine");
+ bool sawCapabilityReason=false;for(const auto& reason:gpuAdmission["reasons"])if(reason.get<std::string>().find("CUDA capability probe")!=std::string::npos)sawCapabilityReason=true;
+ if(!sawCapabilityReason)throw std::runtime_error("GPU pipeline denial did not report the capability probe result: "+gpuAdmission["reasons"].dump());
+
  // Cancellation stops the current phase and every phase after it.
  engine.wait=true;engine.calls=0;
  auto cancelRequest=make_definition(baseWorkload,{1,2,4},0);

@@ -63,7 +63,7 @@ int main(int argc,char** argv){try{
  auto& security=app.get_middleware<ioscope::Security>();
  const auto respond=[](const ioscope::Json& value){crow::response response(value.dump());response.set_header("Content-Type","application/json");return response;};
  const auto failure=[&](const std::exception& error){return crow::response(400,ioscope::Json({{"schemaVersion","1.0.0"},{"code","REQUEST_REJECTED"},{"operation","api"},{"correlationId",ioscope::random_id()},{"runId",nullptr},{"timestamp",ioscope::utc_now()},{"message",error.what()},{"retryable",false}}).dump());};
- CROW_ROUTE(app,"/api/v1/bootstrap")([&]{return respond({{"token",security.token},{"protocolVersion","1.0.0"},{"agentVersion","0.1.0-linux"},{"telemetry",true},{"workloads",true}});});
+ CROW_ROUTE(app,"/api/v1/bootstrap")([&]{return respond({{"token",security.token},{"protocolVersion","1.0.0"},{"agentVersion","0.1.0-linux"},{"telemetry",true},{"workloads",true},{"gpuPipeline",ioscope::cuda_available()}});});
  CROW_ROUTE(app,"/api/v1/inventory")([&]{auto inventory=telemetry.inventory();std::lock_guard<std::mutex> lock(liveMutex);for(auto& device:inventory["devices"])for(const auto& metric:latest["measurements"])if(metric["deviceId"]==device["deviceId"])device["metrics"].push_back(metric);return respond(inventory);});
  CROW_ROUTE(app,"/api/v1/telemetry")([&]{std::lock_guard<std::mutex> lock(liveMutex);return respond(latest);});
  CROW_ROUTE(app,"/api/v1/runs/admission").methods(crow::HTTPMethod::Post)([&](const crow::request& request){try{return respond(workloads.admission(ioscope::parse_command(request.body)));}catch(const std::exception& error){return failure(error);}});
