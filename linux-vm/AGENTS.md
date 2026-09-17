@@ -27,3 +27,12 @@ process cleanup and file identity checks need independent design and validation.
 
 Keep Linux progress in `docs/CURRENT-STATE.md`; document real setup/test commands as
 they become available. No particular coding agent, editor or chat history is required.
+
+## Build performance constraints
+
+This VM has strict memory limits (8 GB RAM). Never use `-j$(nproc)` for `agent/`
+CMake or Make builds — it can spawn as many parallel compiler processes as CPU
+cores, and this project's heavy `nlohmann::json`/jsoncons template instantiation
+makes each one memory-hungry enough that full parallelism risks OOM. Always
+hardcode a build parallelism cap of `-j2` (e.g. `cmake --build build -j2`),
+regardless of how many cores the VM reports.
