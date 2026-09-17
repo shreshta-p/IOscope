@@ -1,7 +1,8 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7 fully done including UI,
-verified in a real browser, Milestones 1-6 complete).
+Updated 2026-09-17 (V1 completion underway: Phase 7 and Phase 8 (analyzer)
+both fully done including UI, verified against real hardware and a real
+browser, Milestones 1-7 complete).
 
 ## Implemented
 
@@ -578,6 +579,48 @@ N-way comparison lives entirely in the new Experiments results table instead,
 which is more natural UX for comparing phases of one experiment than routing
 through the 2-recording compare flow built for ad hoc runs.
 
+**Milestone 7 (Phase 8 deterministic analyzer) — done, verified against real
+telemetry and a real browser:** new `agent/analyzer.hpp` implements all 6 rules
+from `docs/10-ANALYZER-SPEC.md` (memory pressure, queue pressure, thermal
+warning, GPU transfer phase, VRAM pressure, completion anomaly) as pure functions
+over a rolling sample window, each transition-only-emits-once with a 10s
+per-(rule,device) debounce and a distinct recovery event, matching the spec
+exactly. Wired into `WorkloadController::sample()` (called for every sample,
+before contract validation, so events are part of the same immutable
+`ReplaySample` they describe — plugging into the `analyzerEvents: []` field
+`native_recording.hpp` already scaffolded) and reset per run. Completion anomaly
+is checked once at run completion, not per sample, and — the one real bug this
+surfaced — its evidence must cite a measurement genuinely available in the
+terminal frame rather than a hardcoded metric name, since not every telemetry
+setup carries the same metrics (the native test fixture has only one
+measurement total; a hardcoded `cpu0/cpu.utilization` reference failed real
+cross-sample evidence validation there). Fixed by picking whichever measurement
+the frame actually has available.
+
+New `agent/analyzer_tests.cpp` (12th native test): positive/negative cases per
+rule, debounce suppression and re-firing after the window elapses, recovery
+events, GPU-dependent rules correctly never firing when the metric is absent
+(no GPU in this VM) but firing correctly when it genuinely is present, and
+completion anomaly correctly withholding an event rather than fabricating
+evidence when none is available. All 12 native tests pass.
+
+Verified against real, live telemetry (not just the fixture): ran a real tiny
+fio workload (64 MiB, 3s) with the user's opt-in — completed cleanly, zero
+analyzer events fired, which is the honest, correct result for a healthy VM
+with no memory/queue pressure and no thermal sensors. Then built
+`apps/ui/src/Analyze.tsx`, replacing the 'Evidence needs a source' placeholder
+(Learn keeps it for now): a run picker populated from every real saved
+recording from this whole session, an honest "no analyzer events were
+observed... not that analysis was skipped" message when a run has none, and a
+results table plus evidence-reference table when it does. Verified with
+Playwright: the run picker lists real history, the honest empty-state renders
+for a real completed run, and — using a safe, non-destructive technique
+(fetching a real completed recording via the API, injecting one synthetic
+`AnalyzerEvent` into a copy, saving it as a new recording, screenshotting the
+UI, then deleting that demo recording afterward, rather than genuinely
+exhausting VM memory to trigger a real one) — confirmed the events table and
+evidence-reference table render correctly when events are present.
+
 ## Known limitations / not yet done
 
 - Python-based cross-language fixture validation
@@ -629,8 +672,10 @@ through the 2-recording compare flow built for ad hoc runs.
 - [x] Experiments UI: definition picker, admission preview, live progress, and
       results table — verified in a real browser against a real fio run
       (Milestone 6).
-- [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
-- [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
+- [x] Phase 8 (deterministic analyzer): 6 rules, verified against real
+      telemetry and a real browser, `Analyze.tsx` replacing its placeholder
+      (Milestone 7).
+- [ ] Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
 - [ ] Phase 11 (packaging/polish): not started.
 - [ ] Separate bare-metal Linux hardware and release validation.
@@ -652,11 +697,12 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 7: Phase 8 deterministic analyzer (6 rules, wired into the sample-
-append path, `Analyze.tsx` replacing its placeholder). Then milestones 8-9:
-Phase 9 Learn and Phase 11 polish — each with its own commit and real evidence
-before the next starts, per the plan. All of Phase 7 (7A-7E, agent and UI) is
-now complete and verified.
+milestone 8: Phase 9 Learn (13 topics from `docs/11-LEARN-SPEC.md`, wired to
+`DigitalTwin.tsx`'s component selection and to whichever experiments exist per
+topic). Then milestone 9: Phase 11 polish (measured budgets, flagship demos,
+final docs pass). Phase 10 (Ask) stays deferred at the user's request. All of
+Phase 7 (7A-7E) and Phase 8 (analyzer), agent and UI, are complete and
+verified against real hardware and a real browser.
 
 ## Baseline handoff
 

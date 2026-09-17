@@ -25,6 +25,7 @@ import { deriveFlow } from '../../../simulation/src/flows';
 import { Runs } from './Runs';
 import { WorkloadLab } from './WorkloadLab';
 import { Experiments } from './Experiments';
+import { Analyze } from './Analyze';
 import { api } from './client';
 import { DigitalTwin } from './DigitalTwin';
 import { validateDomain } from '../../../contracts/src/validate';
@@ -474,10 +475,12 @@ export function App() {
             />
           ) : page === 'Experiments' ? (
             <Experiments onNotice={setNotice} />
+          ) : page === 'Analyze' ? (
+            <Analyze />
           ) : (
             <section className="content-panel">
               <span className="eyebrow">EXPLORE THE SYSTEM</span>
-              <h2>{page === 'Analyze' ? 'Evidence needs a source.' : 'Start with a behavior you can see.'}</h2>
+              <h2>Start with a behavior you can see.</h2>
               <p>Explore an explicitly labeled synthetic scenario while the native connection is unavailable.</p>
               <div className="scenario-grid">
                 {scenarios.map((name) => (

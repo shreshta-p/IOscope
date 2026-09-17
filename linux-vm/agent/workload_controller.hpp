@@ -2,6 +2,7 @@
 #include "workload_engine.hpp"
 #include "native_recording.hpp"
 #include "store.hpp"
+#include "analyzer.hpp"
 #include <mutex>
 namespace ioscope {
 struct RecordedFrame {Json frame;std::chrono::milliseconds age{0};};
@@ -9,9 +10,17 @@ class WorkloadController {
  Contracts& contracts_;Store& store_;WorkloadEngine& engine_;Json inventory_,mapping_;
  std::function<Resources()> resources_;std::function<RecordedFrame()> frame_;
  std::mutex mutex_;std::thread worker_;std::atomic<bool> cancel_{false};bool busy_=false;
+ Analyzer analyzer_;
  Json snapshot_={{"schemaVersion","1.0.0"},{"status",nullptr},{"workload",nullptr},{"recordingId",nullptr}};
  static Json request_snapshot(const Json& request){return {{"schemaVersion","1.0.0"},{"status",request["status"]},{"workload",request["definition"]},{"recordingId",request["recordingId"]}};}
- Json sample(const std::string& id,unsigned long long sequence,unsigned long long elapsed,const std::string& state,const Json& reason,const Json& workload){auto observed=frame_();auto result=native_sample(observed.frame,id,sequence,elapsed,state,reason,workload,mapping_,observed.age);contracts_.validate("ReplaySample",result);return result;}
+ // Deterministic analyzer rules (docs/10-ANALYZER-SPEC.md) run on every sample,
+ // right after native_recording.hpp builds it and before contract validation,
+ // so their events are part of the same immutable ReplaySample they describe.
+ Json sample(const std::string& id,unsigned long long sequence,unsigned long long elapsed,const std::string& state,const Json& reason,const Json& workload){
+  auto observed=frame_();auto result=native_sample(observed.frame,id,sequence,elapsed,state,reason,workload,mapping_,observed.age);
+  for(auto event:analyzer_.evaluate(result["telemetry"],sequence,std::chrono::steady_clock::now())){event["runId"]=id;result["analyzerEvents"].push_back(event);}
+  contracts_.validate("ReplaySample",result);return result;
+ }
 public:
  WorkloadController(Contracts& contracts,Store& store,WorkloadEngine& engine,Json inventory,Json mapping,
  std::function<Resources()> resources,std::function<RecordedFrame()> frame):contracts_(contracts),store_(store),engine_(engine),inventory_(std::move(inventory)),mapping_(std::move(mapping)),resources_(std::move(resources)),frame_(std::move(frame)){}
@@ -42,6 +51,7 @@ public:
   engine_.ready(!prepareDataset&&!datasetId.is_null()?datasetId.get<std::string>():"");
   const auto resources=resources_();const auto approved=admit(workload,resources);if(!approved.allowed())throw std::runtime_error(approved.reasons.front());
   const auto id=random_id();const std::string resolvedDataset=datasetId.is_null()?id:datasetId.get<std::string>();
+  analyzer_.reset();
   Json metadata={{"schemaVersion","1.0.0"},{"runId",id},{"origin","live"},{"startedAt",utc_now()},{"endedAt",nullptr},{"inventory",inventory_},{"capabilities",Json::array()},{"workload",workload},{"experimentExecutionId",experimentExecutionId},{"phaseId",phaseId},{"engine",engine_.metadata(workload,id,resolvedDataset)},{"mappingVersion","1.0.0"},{"analyzerVersion","1.0.0"},{"simulatorVersion",nullptr},{"seed",nullptr},{"outcome","running"},{"abortReason",nullptr},{"uiMode","measurement"},{"summaries",Json::array()},{"artifacts",Json::array()}};
   const auto started=std::chrono::steady_clock::now();auto initial=sample(id,0,0,"preparing",nullptr,workload);initial["safetyEvents"].push_back({{"schemaVersion","1.0.0"},{"eventId",random_id()},{"runId",id},{"elapsedUs",0},{"ruleId","native-admission"},{"action","admit"},{"message","Native reserve, thermal coverage and cumulative write checks passed"},{"evidence",Json::array()}});for(const auto& device:inventory_["devices"]){auto capabilities=Json::array();for(const auto& metric:initial["telemetry"]["measurements"])if(metric["deviceId"]==device["deviceId"])capabilities.push_back({{"metricId",metric["metricId"]},{"status",metric["status"]},{"requiresElevation",false},{"reason",metric["reason"]}});metadata["capabilities"].push_back({{"schemaVersion","1.0.0"},{"deviceId",device["deviceId"]},{"capabilities",capabilities}});}
   contracts_.validate("RunRecording",{{"schemaVersion","1.0.0"},{"metadata",metadata},{"samples",Json::array({initial})}});
@@ -53,6 +63,14 @@ public:
     auto result=engine_.execute(workload,id,cancel_,watchdog,[&]{append("running",nullptr);},resolvedDataset,prepareDataset,cleanupDataset);
     if(safetyReason&&result.state!="cancelled"){result.state="aborted";result.reason=safetyReason;}
     append(result.state,result.reason?Json(*result.reason):Json(nullptr),false);metadata["outcome"]=result.state;metadata["abortReason"]=result.reason?Json(*result.reason):Json(nullptr);metadata["endedAt"]=utc_now();metadata["summaries"]=result.summaries;
+    // Completion anomaly (docs/10-ANALYZER-SPEC.md): checked once at completion,
+    // not per sample -- "expected terminal result missing or nonzero engine exit."
+    if(result.state=="failed"||(result.state=="completed"&&result.summaries.empty())){
+     auto anomaly=Analyzer::completion_anomaly(samples.back()["telemetry"]["sequence"].get<unsigned long long>(),samples.back()["telemetry"],true,
+      result.state=="failed"?"The workload engine did not complete normally: "+result.reason.value_or("unknown reason"):
+       "The run completed but produced no measurement summary.");
+     if(!anomaly.is_null()){anomaly["runId"]=id;samples.back()["analyzerEvents"].push_back(anomaly);}
+    }
     auto safetyEvent=[&](const std::string& action,const std::string& message){samples.back()["safetyEvents"].push_back({{"schemaVersion","1.0.0"},{"eventId",random_id()},{"runId",id},{"elapsedUs",samples.back()["telemetry"]["elapsedUs"]},{"ruleId","native-lifecycle"},{"action",action},{"message",message},{"evidence",Json::array()}});};
     if(result.state=="aborted")safetyEvent("abort",result.reason.value_or("Native watchdog aborted the run"));
     if(result.cleaned)safetyEvent(*result.cleaned?"cleanup":"cleanup_failed",*result.cleaned?"Owned target and manifest cleanup completed":"Owned scratch cleanup requires attention");
