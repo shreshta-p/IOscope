@@ -13,7 +13,14 @@ end. With the user's explicit opt-in, several real bounded runs executed against
 the real ext4 disk in this VM, culminating in the port plan's specifically named
 trial (64 MiB file, 5 seconds of reads); see "Real workload evidence" below. These
 are engineering-validation and safety-evidence runs in a VM, not a disk performance
-characterization of anything. No UI exists yet.
+characterization of anything.
+
+The React/Three.js UI is also ported and verified in a real browser (screenshots
+below): the 3D scene renders, live telemetry flows through the WebSocket into it in
+real time, and the Workload Lab correctly shows real admission data and the honest
+`fio-3.41` engine label. Windows' automated `native-hosting-e2e.mjs`-style browser
+check (as opposed to this session's manual Playwright verification) is not yet
+ported.
 
 ## Guest environment (recorded 2026-09-16)
 
@@ -199,9 +206,49 @@ scratch fully cleaned up afterward. Measured summaries (read ~33.16 MB/s — at 
 ~0.74ms, p95 ~1.07ms) are recorded for completeness but are, again, not a
 performance characterization of anything — a rate-capped run in a VM.
 
-CI: `.github/workflows/validate.yml` has a `linux-validation` job (TypeScript side
-only; the native agent isn't wired into CI yet — see "Next task"). Not yet observed
-running on GitHub Actions from this session.
+CI: `.github/workflows/validate.yml` has `linux-validation` (TypeScript: contracts,
+simulation, and now UI — 118 tests) and `linux-agent-validation` (native: configure,
+build, `ctest`, no fio install since none of those tests touch real fio) jobs. Not
+yet observed running on GitHub Actions from this session — push and check.
+
+## UI verification (2026-09-17, real browser, not just build/typecheck)
+
+Ported `windows/apps/ui/` to `linux-vm/apps/ui/` (see PORT-PROVENANCE.md for the
+five small text/logic edits). `npm run build` and the full `npm run verify` (118
+tests now: the 109 from before plus 9 UI logic tests for `session`/`comparison`/
+`live-state`) pass. Built output is served correctly by the native agent (`/`,
+`/assets/*` return 200).
+
+Beyond build/typecheck, actually loaded the served page in a real Chromium browser
+(Playwright, manually installed since `npx playwright install` timed out on this
+network — `curl` alone fetched the same file fine, so this was a client-side
+timeout quirk, not a real connectivity problem) and interacted with it:
+
+- The 3D scene (`DigitalTwin.tsx`, React Three Fiber) renders — board, chips, fan
+  detail — and the Storage chip's inspector shows the real discovered device name
+  "Block device sda (system scope)", not a placeholder.
+- Live telemetry visibly updates in the DOM within seconds of page load: real CPU
+  utilization, RAM available, storage throughput, GPU "Unavailable" (honest, no
+  driver in this VM) — confirming the WebSocket → React state → rendered-DOM path
+  works, not just that the API responds to `curl`.
+- Footer correctly reads "LIVE TELEMETRY · native Linux agent" and the sidebar
+  "LINUX / NATIVE FIRST" — the two build-label edits render correctly.
+- Navigated to Workload Lab: real admission data rendered (disk/RAM available,
+  reserves, planned writes, offered rate all matching live values), thermal
+  restriction messaging correctly shown ("CPU or SSD temperature coverage is
+  unavailable..."), and the engine line correctly reads "Workload engine fio-3.41 /
+  Verified" — the artifact-kind and engine-label edits both render correctly.
+- One console 404 (`/favicon.ico` — no favicon declared, cosmetic, matches what
+  Windows' `index.html` would also produce; not a Linux-specific defect).
+
+Screenshots saved locally (git-ignored, like Windows' `out/native-hosting.png`):
+`linux-vm/out/ui-live.png`, `linux-vm/out/ui-workload-lab.png`.
+
+Not yet ported: Windows' automated `native-hosting-e2e.mjs`/`ui-smoke.mjs`-style
+scripted browser checks (today's verification was a manual, one-off Playwright
+script, not a repeatable `npm run` target), and `@playwright/test` itself isn't a
+project dependency yet (deliberately deferred — it's a large addition and the
+manual check above already gave real evidence for this milestone).
 
 ## Known limitations / not yet done
 
@@ -214,10 +261,12 @@ running on GitHub Actions from this session.
   proven against real child processes generically (`process_job_tests`) but not
   against a real in-flight fio run specifically. Cancellation and crash/interruption
   recovery *have* been proven against real fio (see "Real workload evidence").
-- Native agent isn't wired into `.github/workflows/validate.yml` yet — CMake
-  `FetchContent` needs network access in CI, which needs verifying separately.
-- No UI exists for Linux. The agent's `/` and `/assets/*` routes exist and correctly
-  503 with "UI build missing" (matches Windows' behavior for the same case).
+- Native agent is wired into `.github/workflows/validate.yml`
+  (`linux-agent-validation`), but not yet observed actually running on GitHub
+  Actions — CMake `FetchContent` needs network access in CI, unverified there.
+- UI exists and is verified in a real browser locally (see "UI verification"), but
+  `@playwright/test` isn't a project dependency and there's no scripted/CI browser
+  check yet, unlike Windows' `native-hosting-e2e.mjs`/`ui-smoke.mjs`.
 - Host-side VM specs (assigned resource limits, host disk type, physical host
   capacity) are still unknown; not requested from the user yet.
 - fio's `--rate` limiting, `ramp_time`-as-warmup, and lack of a DiskSpd-style
@@ -232,9 +281,9 @@ running on GitHub Actions from this session.
 ## Pending gates
 
 - [x] L0: environment, architecture and portable foundation.
-- [x] L1: read-only Linux telemetry, transport — real HTTP/WebSocket server verified
-      against live `/proc`/`/sys` data. No UI yet (not blocking; UI is separate from
-      the telemetry/transport gate itself).
+- [x] L1: read-only Linux telemetry, transport, and UI — real HTTP/WebSocket server
+      verified against live `/proc`/`/sys` data; UI ported and verified rendering
+      live telemetry in a real browser.
 - [x] L2: native workload engine proven end-to-end against real fio, user-opted-in
       each time, for completed/cancelled/interrupted outcomes (including
       orphan-scratch recovery and honest, never-fabricated, recovery telemetry) and
@@ -251,13 +300,14 @@ block this work.
 
 ## Next task
 
-L2's VM-scope evidence is complete. Move to: (1) porting a minimal Linux UI (or
-explicitly deferring it with rationale) for local transport/UI completeness, (2)
-wiring the native agent into CI, (3) beginning L3 scaffolding (experiments,
-analysis, Learn) at the same honesty bar Windows holds — matching Windows' own
-current completion level (placeholder content, not fully built) rather than
-inventing functionality Windows itself doesn't have working yet. Separately, and
-lower priority: a real-fio timeout case and real "failed" outcome, and eventually
+L1 and L2's VM-scope evidence are both complete: telemetry, transport, UI, and the
+workload engine all work end to end against real hardware in this VM. Move to L3
+scaffolding (experiments, analysis, Learn) at the same honesty bar Windows holds —
+matching Windows' own current completion level (placeholder content, not fully
+built) rather than inventing functionality Windows itself doesn't have working yet.
+Lower priority, not blocking: a real-fio timeout case and real "failed" outcome,
+a scripted browser check (would need `@playwright/test` added as a dependency),
+confirming the two CI jobs actually pass on GitHub Actions, and eventually
 bare-metal Linux hardware validation (explicitly out of scope for a VM).
 
 ## Baseline handoff

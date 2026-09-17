@@ -102,6 +102,30 @@ Windows' BCrypt-backed hash so no OpenSSL dependency is needed), `linux_proc.hpp
   (`windows/tools/check_docs.py`). Neither is ported yet — see
   [CURRENT-STATE.md](CURRENT-STATE.md) for why and what covers their ground for now.
 
+## UI (`apps/ui/`, baseline commit 280ced5)
+
+`windows/apps/ui/` is plain React/TypeScript/Three.js with no OS-specific code —
+talks to the agent only via `fetch`/`WebSocket` against same-origin `/api/v1/*`,
+which is identical on both platforms. Copied essentially unmodified into
+`linux-vm/apps/ui/`: `client.ts`, `session.ts`, `metrics.ts`, `comparison.ts`,
+`live-state.ts`, `main.tsx`, `DigitalTwin.tsx`, `useLive.ts`, `style.css`,
+`index.html`, `vite.config.ts`, and all three test files.
+
+Five small text/logic edits, all display strings or artifact-kind handling, not
+behavior: `WorkloadLab.tsx`'s cache-mode option labels ("Windows buffered I/O" →
+"Buffered I/O (page cache)"; "Bypass Windows software cache" → "Direct I/O (bypass
+page cache)") and its engine-readiness label ("DiskSpd {version}" → "Workload engine
+{version}", since the version string itself is now the honest identifier, e.g.
+`fio-3.41`); `App.tsx`'s two build-label strings ("WINDOWS / NATIVE FIRST" → "LINUX /
+NATIVE FIRST", "native Windows agent" → "native Linux agent"); `Runs.tsx`'s artifact
+download logic, which only handled `kind === 'diskspd-xml'` — extended to also
+handle `'fio-json'` (correct MIME type/extension) rather than falling through to a
+generic `.txt`/`text/plain`.
+
+Package/build config is new but mirrors the Windows workspace's UI package exactly
+(same dependency versions): `apps/ui/package.json`, and `apps/ui` added to the root
+`package.json` workspaces/scripts and `tsconfig.json` include list.
+
 ## Not copied
 
 `apps/ui/`, `agent/`, native build tooling, PowerShell scripts, DiskSpd packaging —
