@@ -159,6 +159,35 @@ found and fixed specifically because this real run was attempted — fake-adapte
 tests use synthetic values that never touch these code paths, which is itself a
 useful lesson about what fake-adapter coverage does and doesn't prove.
 
+Two more real runs (still within the same opt-in, same tiny 64 MiB working set,
+10-second workload so there was time to act mid-run) proved the remaining safety
+paths against a real fio process, not just fake adapters or generic test binaries:
+
+**Cancellation**: started a real run, waited for `state: running`, called
+`POST /api/v1/runs/cancel`. Result: `outcome: cancelled`,
+`abortReason: "User requested cancellation"`, 12 real telemetry samples captured
+during the run, scratch fully cleaned up (`ls scratch/` empty afterward).
+
+**Interruption recovery**: started a real run, waited until well into `running`,
+then `kill -9`'d the agent process itself (simulating a crash) — leaving a real
+64 MiB `data.bin` + `ownership.json` orphaned in scratch, with the fio child
+process independently gone too (its cgroup scope contains only itself, so it
+naturally exits/is reaped rather than surviving as a true orphan). On restart, the
+agent silently recovered the orphaned scratch via `recover_scratch()` (verified
+identity match, deleted) and `WorkloadController::recover()` marked the run
+`outcome: interrupted`, `reason: "Agent restarted; interruption time is unknown"` —
+critically, every measurement in the recovery sample is honestly `status:
+unavailable, reason: "Agent restarted; no measurement at interruption"`, never a
+stale or fabricated value presented as fresh evidence.
+
+Completed, cancelled, and interrupted outcomes are now proven against a real fio
+process end to end (matching the Windows Phase 5-6 evidence pattern of validating
+each terminal state). "Failed" and "aborted" (safety-watchdog) outcomes remain
+proven only via the fake-adapter `FakeEngine` in `workload_controller_tests.cpp`,
+which deliberately exercises those states — triggering them with a real fio process
+would need contriving a real failure (e.g. a bad argument or corrupted output),
+which hasn't been attempted.
+
 CI: `.github/workflows/validate.yml` has a `linux-validation` job (TypeScript side
 only; the native agent isn't wired into CI yet — see "Next task"). Not yet observed
 running on GitHub Actions from this session.
@@ -170,11 +199,10 @@ running on GitHub Actions from this session.
   ported. The TS/Vitest suite and the native `contract_tests`/`safety_tests` already
   validate fixtures from two independent language runtimes now, which is meaningful
   cross-language coverage even without porting the Python script itself.
-- Cancellation, timeout, and interrupted-run recovery have been proven against real
-  child processes in general (`process_job_tests`, `scratch_tests`) and against fio
-  specifically only for the successful-completion path (see "Real workload
-  evidence"). Cancelling/timing out a real in-flight fio run specifically — not a
-  generic sleep/flood test process — has not yet been exercised.
+- Timeout (deadline-exceeded, as opposed to user-requested cancellation) has been
+  proven against real child processes generically (`process_job_tests`) but not
+  against a real in-flight fio run specifically. Cancellation and crash/interruption
+  recovery *have* been proven against real fio (see "Real workload evidence").
 - Native agent isn't wired into `.github/workflows/validate.yml` yet — CMake
   `FetchContent` needs network access in CI, which needs verifying separately.
 - No UI exists for Linux. The agent's `/` and `/assets/*` routes exist and correctly
@@ -196,11 +224,12 @@ running on GitHub Actions from this session.
 - [x] L1: read-only Linux telemetry, transport — real HTTP/WebSocket server verified
       against live `/proc`/`/sys` data. No UI yet (not blocking; UI is separate from
       the telemetry/transport gate itself).
-- [~] L2: native workload engine built and proven end-to-end with one real,
-      user-opted-in fio run (admission → preparation → fio → parsing → validation →
-      persistence → cleanup, all real). Still outstanding: real-fio cancellation/
-      timeout/interruption-recovery evidence, then the separate opt-in for the
-      64 MiB/5 s trial itself.
+- [~] L2: native workload engine proven end-to-end against real fio, user-opted-in,
+      for completed/cancelled/interrupted outcomes, including orphan-scratch
+      recovery and honest (never fabricated) recovery telemetry. Still outstanding:
+      a real-fio timeout (deadline, not user-cancel) case, and the separately
+      opt-in-gated 64 MiB/5 s trial itself, which is a parameter variant of what's
+      already proven, not new mechanism.
 - [ ] L3: controlled experiments, analysis, learning and release preparation.
 - [ ] Separate bare-metal Linux hardware and release validation.
 
@@ -209,18 +238,12 @@ block this work.
 
 ## Next task
 
-1. Exercise cancellation and timeout against a real (not fake-adapter) in-flight fio
-   run specifically — e.g. start a longer real run and cancel it mid-flight via
-   `POST /api/v1/runs/cancel`, and verify the recording/scratch state afterward.
-2. Simulate an interrupted run (kill the agent process mid-run) and verify
-   `WorkloadController::recover()` and orphan scratch recovery against a real fio
-   child, not just the synthetic fixtures in `workload_controller_tests`/
-   `scratch_tests`.
-3. Only after that evidence exists: request explicit opt-in for the bounded 64 MiB
-   file / 5-second-read real trial specifically, per the safety policy — never
-   automatic, and distinct from the engineering-validation run already done.
-4. Wire the native agent into CI once TypeScript CI is confirmed stable; port a
-   minimal UI (or note it's deferred) for local transport/UI completeness.
+Ask the user whether to proceed with the specific sanctioned 64 MiB/5-second-read
+real-hardware trial (a parameter variant of the validation already done — same
+mechanism, just the named numbers from the port plan), or consider L2's safety
+evidence sufficient as-is and move to L3/UI work instead. Either way, still open:
+wire the native agent into CI once TypeScript CI is confirmed stable, and port a
+minimal UI (or note it's deferred) for local transport/UI completeness.
 
 ## Baseline handoff
 
