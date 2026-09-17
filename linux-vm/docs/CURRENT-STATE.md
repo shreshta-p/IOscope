@@ -1,6 +1,6 @@
 # Linux VM current state
 
-Updated 2026-09-17 (L3 investigation and scripted browser checks).
+Updated 2026-09-17 (L3 investigation, scripted browser checks, real fio failure proof).
 
 ## Implemented
 
@@ -188,11 +188,41 @@ stale or fabricated value presented as fresh evidence.
 
 Completed, cancelled, and interrupted outcomes are now proven against a real fio
 process end to end (matching the Windows Phase 5-6 evidence pattern of validating
-each terminal state). "Failed" and "aborted" (safety-watchdog) outcomes remain
-proven only via the fake-adapter `FakeEngine` in `workload_controller_tests.cpp`,
-which deliberately exercises those states — triggering them with a real fio process
-would need contriving a real failure (e.g. a bad argument or corrupted output),
-which hasn't been attempted.
+each terminal state).
+
+**Failed (2026-09-17, real fio, standalone probe, not through the full HTTP
+API)**: there is no organic way to make a correctly-admitted, correctly-prepared
+real workload fail without either contriving a fault or genuinely exhausting a
+resource (which the safety policy exists specifically to prevent), so this was
+proven with a small standalone probe using the actual project code
+(`Scratch`, `run_child_process`, `fio_arguments`, the real `/usr/bin/fio`
+binary) with preparation deliberately skipped, leaving the scratch target at 0
+bytes. Real fio, given `--allow_file_create=0` and a file smaller than the
+requested `--size`, genuinely refuses to extend it:
+```
+Real fio exit code: 1
+Real fio stderr: fio: file creation disallowed by allow_file_create=0
+EngineResult.state (matches workload_engine.hpp's real branch): failed
+EngineResult.reason: fio exited with code 1: fio: file creation disallowed by allow_file_create=0
+```
+This proves `workload_engine.hpp`'s `else if(child.exitCode)` branch against a
+real fio exit code and real stderr text, not `FakeEngine`'s scripted failure.
+One side effect worth recording: real fio's own failure path unlinked the
+0-byte target file itself (not this project's code), which — combined with the
+probe's already-artificial skipped preparation — left the run's
+`ownership.json` manifest orphaned; cleaned up manually, and would otherwise
+have been caught by `recover_scratch()`'s orphan sweep on the next agent start
+like any other interrupted run. This is a byproduct of deliberately skipping
+preparation to trigger the failure safely, not a defect in the normal
+preparation-then-execute flow, which always fills the file to the correct size
+before fio ever runs.
+
+**Aborted (safety-watchdog breach)** remains proven only via the fake-adapter
+`FakeEngine` in `workload_controller_tests.cpp`. Unlike "failed," this one
+can't be safely proven with a real workload without genuinely breaching a
+resource reserve or temperature threshold mid-run — exactly the situation the
+safety policy exists to prevent test infrastructure from ever doing on
+purpose. Left as fake-adapter-only by design, not oversight.
 
 **The named trial**: with a second, separate explicit opt-in, ran the port plan's
 specifically named configuration — 64 MiB working set, 5 seconds measured duration
@@ -322,10 +352,13 @@ as Windows — not because Linux is behind.
   ported. The TS/Vitest suite and the native `contract_tests`/`safety_tests` already
   validate fixtures from two independent language runtimes now, which is meaningful
   cross-language coverage even without porting the Python script itself.
-- Timeout (deadline-exceeded, as opposed to user-requested cancellation) has been
-  proven against real child processes generically (`process_job_tests`) but not
-  against a real in-flight fio run specifically. Cancellation and crash/interruption
-  recovery *have* been proven against real fio (see "Real workload evidence").
+- "Aborted" (a safety-watchdog breach mid-run — disk/RAM reserve or temperature
+  threshold crossed while a workload is active, see `safety.hpp`'s
+  `runtime_breach`) is proven only via `FakeEngine`, by design: proving it for
+  real would mean genuinely breaching a resource reserve mid-run, which the
+  safety policy exists to prevent test infrastructure from ever doing on
+  purpose. Completed, cancelled, interrupted, and failed outcomes *have* all
+  been proven against real fio (see "Real workload evidence").
 - Native agent is wired into `.github/workflows/validate.yml`
   (`linux-agent-validation`), but not yet observed actually running on GitHub
   Actions — CMake `FetchContent` needs network access in CI, unverified there.
@@ -347,13 +380,12 @@ as Windows — not because Linux is behind.
       verified against live `/proc`/`/sys` data; UI ported and verified rendering
       live telemetry in a real browser.
 - [x] L2: native workload engine proven end-to-end against real fio, user-opted-in
-      each time, for completed/cancelled/interrupted outcomes (including
+      each time, for completed/cancelled/interrupted/failed outcomes (including
       orphan-scratch recovery and honest, never-fabricated, recovery telemetry) and
       the port plan's specifically named trial (64 MiB/5s, restricted to `light`
-      intensity by the correctly-enforced missing-thermal-coverage policy). A
-      real-fio timeout (deadline, not user-cancel) case and "failed"/"aborted"
-      outcomes remain fake-adapter-only — a real-hardware gap worth closing before
-      claiming this fully bulletproof, but not blocking VM-scope L2 completion.
+      intensity by the correctly-enforced missing-thermal-coverage policy). Only
+      "aborted" (mid-run safety-watchdog breach) remains fake-adapter-only, by
+      design — see "Known limitations."
 - [x] L3: controlled experiments, analysis, learning — at parity with Windows'
       own current completion level (contracts + UI nav placeholders only; no
       execution engine on either platform yet — see "L3 investigation" above).
@@ -367,18 +399,16 @@ block this work.
 ## Next task
 
 Every gate that has real content to port is done: L0-L2 have full VM-scope
-real-hardware evidence, the UI is ported and verified both manually and via
-scripted Playwright checks, and L3 is confirmed at parity with Windows' own
-(placeholder-only) completion level. What's left is polish, not porting:
+real-hardware evidence (completed/cancelled/interrupted/failed all proven against
+real fio; only the "aborted" safety-watchdog path is fake-adapter-only, by design),
+the UI is ported and verified both manually and via scripted Playwright checks, and
+L3 is confirmed at parity with Windows' own (placeholder-only) completion level.
+This VM's real-fio evidence already exceeds Windows' own real-hardware verification
+bar (Windows' Phase 6 real-DiskSpd-run gate remains outstanding there). What's left:
 
-- A real-fio timeout (deadline-exceeded, not user-cancel) case and a real "failed"
-  outcome case remain fake-adapter-only (see "Known limitations"); low priority
-  since Windows itself has never run a real DiskSpd workload at all (Phase 6 is
-  outstanding there), so this VM's fio evidence already exceeds Windows' own
-  real-hardware verification bar.
-- Confirming `linux-validation`/`linux-agent-validation` actually pass on GitHub
-  Actions — needs a push, which is a publish action and needs the user's go-ahead
-  first (not yet given).
+- Push `codex/linux-port` to GitHub (authorized 2026-09-17) and confirm
+  `linux-validation`/`linux-agent-validation` actually pass on GitHub Actions —
+  not yet observed running remotely.
 - Eventual bare-metal Linux hardware validation (explicitly out of scope for a VM,
   per the port plan).
 
