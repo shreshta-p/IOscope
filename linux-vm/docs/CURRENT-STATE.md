@@ -239,8 +239,9 @@ performance characterization of anything — a rate-capped run in a VM.
 
 CI: `.github/workflows/validate.yml` has `linux-validation` (TypeScript: contracts,
 simulation, and now UI — 118 tests) and `linux-agent-validation` (native: configure,
-build, `ctest`, no fio install since none of those tests touch real fio) jobs. Not
-yet observed running on GitHub Actions from this session — push and check.
+build, `ctest`, no fio install since none of those tests touch real fio) jobs. Both
+confirmed passing on a real GitHub Actions run — see "CI confirmed on GitHub
+Actions" below.
 
 ## UI verification (2026-09-17, real browser, not just build/typecheck)
 
@@ -359,9 +360,6 @@ as Windows — not because Linux is behind.
   safety policy exists to prevent test infrastructure from ever doing on
   purpose. Completed, cancelled, interrupted, and failed outcomes *have* all
   been proven against real fio (see "Real workload evidence").
-- Native agent is wired into `.github/workflows/validate.yml`
-  (`linux-agent-validation`), but not yet observed actually running on GitHub
-  Actions — CMake `FetchContent` needs network access in CI, unverified there.
 - Host-side VM specs (assigned resource limits, host disk type, physical host
   capacity) are still unknown; not requested from the user yet.
 - fio's `--rate` limiting, `ramp_time`-as-warmup, and lack of a DiskSpd-style
@@ -396,23 +394,33 @@ as Windows — not because Linux is behind.
 The Windows Phase 6 real-run gate remains outstanding independently and does not
 block this work.
 
+## CI confirmed on GitHub Actions (2026-09-17)
+
+`codex/linux-port` pushed (authorized by the user) and all three
+`validate.yml` jobs passed on a real GitHub Actions run
+(run `35183846093`): `windows-validation` (unaffected, still green),
+`linux-validation` (TypeScript: contracts/simulation/UI, 35s), and
+`linux-agent-validation` (native: CMake configure + build + full `ctest`
+suite, 1m42s) — the first time the native agent has built and its tests run
+on GitHub's infrastructure rather than only this VM. `FetchContent`'s network
+dependency resolved fine in that environment.
+
 ## Next task
 
-Every gate that has real content to port is done: L0-L2 have full VM-scope
-real-hardware evidence (completed/cancelled/interrupted/failed all proven against
-real fio; only the "aborted" safety-watchdog path is fake-adapter-only, by design),
-the UI is ported and verified both manually and via scripted Playwright checks, and
-L3 is confirmed at parity with Windows' own (placeholder-only) completion level.
-This VM's real-fio evidence already exceeds Windows' own real-hardware verification
-bar (Windows' Phase 6 real-DiskSpd-run gate remains outstanding there). What's left:
-
-- Push `codex/linux-port` to GitHub (authorized 2026-09-17) and confirm
-  `linux-validation`/`linux-agent-validation` actually pass on GitHub Actions —
-  not yet observed running remotely.
-- Eventual bare-metal Linux hardware validation (explicitly out of scope for a VM,
-  per the port plan).
+Every gate with real content to port is done and now independently confirmed
+on GitHub Actions, not just this VM: L0-L2 have full real-hardware evidence
+(completed/cancelled/interrupted/failed outcomes all proven against real fio;
+only the "aborted" safety-watchdog path is fake-adapter-only, by design), the
+UI is ported and verified both manually and via scripted Playwright checks,
+and L3 is confirmed at parity with Windows' own (placeholder-only) completion
+level. This VM's real-fio evidence already exceeds Windows' own real-hardware
+verification bar (Windows' Phase 6 real-DiskSpd-run gate remains outstanding
+there). What's left is explicitly out of scope for this port, not deferred
+work: eventual bare-metal Linux hardware validation (per the port plan, VM
+evidence does not pass a physical-hardware gate).
 
 ## Baseline handoff
 
 The initial platform-separated checkpoint is tagged `windows-baseline-2026-09-16`
-(commit `280ced5`). Linux work is on branch `codex/linux-port`, currently unpushed.
+(commit `280ced5`). Linux work is on branch `codex/linux-port`, pushed to
+`origin` (2026-09-17); no pull request opened yet.
