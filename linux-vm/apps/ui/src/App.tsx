@@ -26,6 +26,7 @@ import { Runs } from './Runs';
 import { WorkloadLab } from './WorkloadLab';
 import { Experiments } from './Experiments';
 import { Analyze } from './Analyze';
+import { Learn } from './Learn';
 import { api } from './client';
 import { DigitalTwin } from './DigitalTwin';
 import { validateDomain } from '../../../contracts/src/validate';
@@ -54,7 +55,8 @@ export function App() {
     [logical, setLogical] = useState(false),
     [isolated, setIsolated] = useState(false),
     [focus, setFocus] = useState(0),
-    [requestedMeasurement, setMeasurement] = useState(false);
+    [requestedMeasurement, setMeasurement] = useState(false),
+    [pendingExperimentId, setPendingExperimentId] = useState<string | null>(null);
   const [nativeWorkload, setNativeWorkload] = useState<WorkloadSnapshot | null>(null);
   const nativeBusy = Boolean(
     nativeWorkload?.status && ['validating', 'preparing', 'running', 'stopping'].includes(nativeWorkload.status.state),
@@ -241,6 +243,17 @@ export function App() {
               <button className={session.mode === 'SIMULATED' ? 'selected' : ''} onClick={() => demo()}>
                 Simulation <ArrowUpRight size={14} />
               </button>
+              <select
+                aria-label="Simulated scenario"
+                value={scenario}
+                onChange={(e) => demo(e.target.value as Scenario)}
+              >
+                {scenarios.map((name) => (
+                  <option key={name} value={name}>
+                    {name.replaceAll('-', ' ')}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           {notice && (
@@ -474,24 +487,22 @@ export function App() {
               onNotice={setNotice}
             />
           ) : page === 'Experiments' ? (
-            <Experiments onNotice={setNotice} />
+            <Experiments onNotice={setNotice} initialDefinitionId={pendingExperimentId} />
           ) : page === 'Analyze' ? (
             <Analyze />
-          ) : (
-            <section className="content-panel">
-              <span className="eyebrow">EXPLORE THE SYSTEM</span>
-              <h2>Start with a behavior you can see.</h2>
-              <p>Explore an explicitly labeled synthetic scenario while the native connection is unavailable.</p>
-              <div className="scenario-grid">
-                {scenarios.map((name) => (
-                  <button key={name} onClick={() => demo(name)}>
-                    <span>{name.replaceAll('-', ' ')}</span>
-                    <ArrowUpRight size={18} />
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          ) : page === 'Learn' ? (
+            <Learn
+              onSelectComponent={(id) => {
+                setSelected(id);
+                setFocus((f) => f + 1);
+                setPage('Live');
+              }}
+              onOpenExperiments={(definitionId) => {
+                setPendingExperimentId(definitionId);
+                setPage('Experiments');
+              }}
+            />
+          ) : null}
           <footer>
             <span>
               <i className="local-dot" />

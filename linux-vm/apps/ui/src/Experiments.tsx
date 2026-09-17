@@ -29,8 +29,15 @@ function phaseLabel(definition: ExperimentDefinition, ordinal: number): string {
   }
 }
 
-export function Experiments({ onNotice }: { onNotice: (message: string) => void }) {
-  const [definition, setDefinition] = useState<ExperimentDefinition>(experimentCatalog[0]!);
+interface Props {
+  onNotice: (message: string) => void;
+  initialDefinitionId?: string | null;
+}
+
+export function Experiments({ onNotice, initialDefinitionId }: Props) {
+  const [definition, setDefinition] = useState<ExperimentDefinition>(
+    experimentCatalog.find((entry) => entry.definitionId === initialDefinitionId) ?? experimentCatalog[0]!,
+  );
   const [admission, setAdmission] = useState<ExperimentAdmission | null>(null);
   const [execution, setExecution] = useState<ExperimentExecution | null>(null);
   const [phaseRecordings, setPhaseRecordings] = useState<Record<string, Recording>>({});

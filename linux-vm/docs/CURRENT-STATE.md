@@ -1,8 +1,8 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7 and Phase 8 (analyzer)
-both fully done including UI, verified against real hardware and a real
-browser, Milestones 1-7 complete).
+Updated 2026-09-17 (V1 completion underway: Phases 7-9 all done including UI,
+verified against real hardware and a real browser, Milestones 1-8 complete;
+only Phase 11 polish remains).
 
 ## Implemented
 
@@ -621,6 +621,33 @@ UI, then deleting that demo recording afterward, rather than genuinely
 exhausting VM memory to trigger a real one) — confirmed the events table and
 evidence-reference table render correctly when events are present.
 
+**Milestone 8 (Phase 9 Learn) — done, verified in a real browser:** new
+`apps/ui/src/learn-content.ts` (13 topics from `docs/11-LEARN-SPEC.md`'s table,
+each with the required four sections: what/why/see-in-system/try-yourself) and
+`apps/ui/src/Learn.tsx`, replacing the 'Start with a behavior you can see'
+placeholder. Each topic cross-references a digital-twin component and, where a
+real working experiment actually exists, that experiment — honestly `null`
+for "Sequential vs random" (no dedicated experiment exists for it) rather than
+linking somewhere misleading, and the four GPU-adjacent topics correctly show
+"Requires a supported GPU" (disabled) since 7E has no execution engine on this
+platform.
+
+Two real cross-page links implemented and verified, not just described: "Highlight
+in Live view" sets the same `selected`/`focus` state `DigitalTwin.tsx` uses and
+navigates to Live (confirmed via Playwright: selecting "Queue depth" then
+clicking through actually lands on Live with the Storage component selected);
+"Open experiment" deep-links into the Experiments page with the *correct*
+profile pre-selected (a real prop threaded through `App.tsx`, not a
+coincidental default match — verified by following the Queue depth topic's
+link and confirming Experiments actually opens on "Queue depth sweep").
+
+One real regression caught before it shipped: replacing the shared Experiments/
+Learn/Analyze placeholder removed the only way to pick a specific simulated
+scenario (the placeholder's scenario grid was serving double duty as a genuine
+demo-scenario picker, not just filler). Fixed by adding a proper scenario
+`<select>` next to the existing Live/Simulation toggle instead of leaving that
+capability with nowhere to live.
+
 ## Known limitations / not yet done
 
 - Python-based cross-language fixture validation
@@ -675,7 +702,8 @@ evidence-reference table render correctly when events are present.
 - [x] Phase 8 (deterministic analyzer): 6 rules, verified against real
       telemetry and a real browser, `Analyze.tsx` replacing its placeholder
       (Milestone 7).
-- [ ] Phase 9 (Learn): not started.
+- [x] Phase 9 (Learn): 13 topics, verified in a real browser including real
+      cross-page deep links to Live and Experiments (Milestone 8).
 - [ ] Phase 10 (Ask): deferred at the user's request.
 - [ ] Phase 11 (packaging/polish): not started.
 - [ ] Separate bare-metal Linux hardware and release validation.
@@ -697,12 +725,12 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 8: Phase 9 Learn (13 topics from `docs/11-LEARN-SPEC.md`, wired to
-`DigitalTwin.tsx`'s component selection and to whichever experiments exist per
-topic). Then milestone 9: Phase 11 polish (measured budgets, flagship demos,
-final docs pass). Phase 10 (Ask) stays deferred at the user's request. All of
-Phase 7 (7A-7E) and Phase 8 (analyzer), agent and UI, are complete and
-verified against real hardware and a real browser.
+milestone 9 (final): Phase 11 polish — measured budgets (build time, agent
+startup overhead), two flagship demo write-ups, a timed fresh-clone setup
+test, and a final pending-gates/limitations pass across all the docs. Phase 10
+(Ask) stays deferred at the user's request; everything else in
+`docs/COMPLETION.md`'s checklist (Phases 7-9) is now complete and verified
+against real hardware and a real browser, on Linux.
 
 ## Baseline handoff
 
