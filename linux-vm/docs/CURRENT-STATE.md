@@ -1,7 +1,7 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7A queue-depth sweep proven
-against real fio, Milestones 1-2 done).
+Updated 2026-09-17 (V1 completion underway: Phase 7A/7B/7C proven against real
+fio, Milestones 1-3 done).
 
 ## Implemented
 
@@ -442,9 +442,42 @@ concurrency only adds queueing latency while throughput plateaus and *falls*
 `ls ~/.local/share/ioscope/scratch/` was empty after completion — all 6 phases'
 owned files and manifests cleaned up correctly, no orphans.
 
-Not yet done: 7B/7C/7D real runs (7A proved the sequencing engine works; those are
-lower-evidence-burden per the plan), the Experiments UI, and cross-phase comparison
-display.
+**Milestone 3 (7B block-size sweep, 7C buffered/unbuffered, real fio, user opt-in
+given) — done:** as expected, neither needed any engine changes — both are new
+`ExperimentDefinition`s reusing the exact same sequencing engine 7A already proved.
+
+7B: 5 phases (4/16/64/256 KiB, 1 MiB), sequential read, QD4, 1 GiB working set, 15s
+each. All completed, real evidence:
+
+| Block | IOPS | Read B/s |
+|---|---|---|
+| 4 KiB | 8192 | 33.6 MB/s |
+| 16 KiB | 2031 | 33.3 MB/s |
+| 64 KiB | 511 | 33.5 MB/s |
+| 256 KiB | 128 | 33.5 MB/s |
+| 1 MiB | 32 | 33.5 MB/s |
+
+Exactly the spec's own hypothesis: throughput stays flat at the light-intensity
+rate cap regardless of block size, while IOPS falls proportionally as block size
+grows — "equal byte volume is not equal operations," genuinely demonstrated.
+
+7C: 4 phases (buffered→unbuffered→unbuffered→buffered), random read, QD4, 512 MiB,
+10s each. All completed, but the honest result here is a **non-finding**: IOPS
+(~511-512), throughput (~33.5 MB/s) and mean latency (~0.54-0.58ms) were
+statistically indistinguishable across all four phases regardless of cache mode or
+order. Recorded as-is, not smoothed over — at this VM's light-intensity rate cap,
+the buffered/unbuffered distinction produces no measurable difference here, most
+likely because the offered-rate cap (not the cache path) is the binding constraint,
+and/or VirtualBox's virtual disk backend doesn't expose a measurably different path
+for `O_DIRECT` at this scale. This is exactly the kind of result
+`07-EXPERIMENT-SPEC.md` anticipates ("results may reflect ... the chosen rate cap")
+— a real, evidence-backed finding, not evidence of a broken experiment.
+
+Both experiments' scratch directories were empty after completion (9 phases total
+across both, no orphans).
+
+Not yet done: 7D real run (needs the scratch-reuse engine change first), the
+Experiments UI, and cross-phase comparison display.
 
 ## Known limitations / not yet done
 
@@ -489,8 +522,8 @@ display.
       The user then asked to complete V1 itself; see "V1 completion" above,
       now in progress.
 - [ ] Phase 7A-7D (experiments): admission/sequencing engine done (Milestone 1);
-      7A (queue-depth sweep) proven end-to-end against real fio, 6 linked phases,
-      real measured evidence (Milestone 2). 7B-7D and the UI not yet done.
+      7A/7B/7C all proven end-to-end against real fio with linked phases and real
+      measured evidence (Milestones 2-3). 7D and the UI not yet done.
 - [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
 - [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
@@ -514,13 +547,12 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 3: 7B (block-size sweep) and 7C (buffered/unbuffered) — new
-`ExperimentDefinition`s only, no engine changes expected, proven with one real
-run each. Then milestones 4-9: 7D (needs a scratch-reuse engine change), 7E
-capability gate, the Experiments UI (definition picker, admission preview,
-phase progress, cross-phase comparison), Phase 8 analyzer, Phase 9 Learn, and
-Phase 11 polish — each with its own commit and real evidence before the next
-starts, per the plan.
+milestone 4: 7D (first/repeated access) — needs the scratch-reuse/deferred-cleanup
+engine change (both phases must read the same prepared file) before it can be
+proven for real. Then milestones 5-9: 7E capability gate, the Experiments UI
+(definition picker, admission preview, phase progress, cross-phase comparison),
+Phase 8 analyzer, Phase 9 Learn, and Phase 11 polish — each with its own commit
+and real evidence before the next starts, per the plan.
 
 ## Baseline handoff
 
