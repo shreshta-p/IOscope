@@ -52,7 +52,7 @@ public:
  Json admission(const Json& definition){
   contracts_.validate("ExperimentDefinition",definition);
   const auto resources=resources_();auto result=plan(definition,resources);
-  bool ready=false;try{engine_.ready();ready=true;}catch(const std::exception& error){result.reasons.push_back(std::string(error.what()).substr(0,512));}
+  bool ready=false;try{engine_.ready("");ready=true;}catch(const std::exception& error){result.reasons.push_back(std::string(error.what()).substr(0,512));}
   {std::lock_guard<std::mutex> lock(mutex_);if(busy_)result.reasons.push_back("An experiment is already active");}
   if(!store_.pending().empty())result.reasons.push_back("An unfinished run journal requires recovery");
   Json value={{"schemaVersion","1.0.0"},{"definition",definition},{"allowed",result.allowed()},{"reasons",result.reasons},
@@ -72,7 +72,7 @@ public:
    return store_.experiment(prior["executionId"].get<std::string>());
   }
   if(busy_)throw std::runtime_error("An experiment is already active");if(worker_.joinable())worker_.join();
-  engine_.ready();const auto resources=resources_();const auto approved=plan(definition,resources);
+  engine_.ready("");const auto resources=resources_();const auto approved=plan(definition,resources);
   if(!approved.allowed())throw std::runtime_error(approved.reasons.front());
   const auto executionId=random_id();
   Json execution={{"schemaVersion","1.0.0"},{"executionId",executionId},{"definitionId",definition.at("definitionId")},
@@ -84,11 +84,18 @@ public:
   try{worker_=std::thread([this,definition,execution,executionId]()mutable noexcept{
    try{
     std::string finalStatus="completed";const auto& phases=definition.at("phases");
+    // First/repeated access (docs/07-EXPERIMENT-SPEC.md) reads the same
+    // prepared dataset twice: every phase shares one dataset keyed by the
+    // execution itself, the first phase prepares and keeps it, the last phase
+    // reuses and cleans it up. Every other experiment type keeps today's
+    // one-fresh-dataset-per-phase behavior.
+    const bool sharedDataset=definition.at("variable")=="accessPass";
     for(std::size_t i=0;i<phases.size();i++){
      if(cancel_.load()){finalStatus="cancelled";break;}
      const auto& phase=phases[i];
      Json startRequest={{"schemaVersion","1.0.0"},{"requestId",random_id()},{"workload",phase.at("workload")}};
-     workload_.start(startRequest,executionId,phase.at("phaseId"));
+     if(sharedDataset)workload_.start(startRequest,executionId,phase.at("phaseId"),executionId,i==0,i+1==phases.size());
+     else workload_.start(startRequest,executionId,phase.at("phaseId"));
      Json phaseSnapshot;while(true){phaseSnapshot=workload_.snapshot();if(!phaseSnapshot["recordingId"].is_null())break;std::this_thread::sleep_for(std::chrono::milliseconds(50));}
      const std::string recordingId=phaseSnapshot["recordingId"];const auto recording=Json::parse(store_.get(recordingId));const std::string outcome=recording["metadata"]["outcome"];
      execution["phases"][i]["runId"]=recordingId;execution["phases"][i]["outcome"]=outcome;execution["currentPhaseOrdinal"]=static_cast<int>(i)+1;

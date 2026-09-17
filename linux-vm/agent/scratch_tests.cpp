@@ -21,10 +21,26 @@ int main(int argc,char** argv){try{
  {ioscope::Scratch scratch(ioscope::random_id());const auto preparation=std::filesystem::path(executable).parent_path()/"ioscope_prepare";const auto ownId=scratch.path().parent_path().filename().string();std::atomic<bool> stop=false;
   const auto prepared=ioscope::run_child_process("scratch-test-prepare",preparation.string(),{ownId,"4096"},stop,std::chrono::seconds(3),[]{return std::optional<std::string>{};},scratch.preparation_fd());if(prepared.exitCode||std::filesystem::file_size(scratch.path())!=4096)throw std::runtime_error("Isolated preparation failed: "+prepared.errors);
  }
+ // First/repeated access (docs/07-EXPERIMENT-SPEC.md): one phase prepares and
+ // keeps a dataset, a later phase reuses the exact same on-disk bytes.
+ const auto sharedId=ioscope::random_id();std::filesystem::path sharedPath;
+ {ioscope::Scratch first(sharedId);sharedPath=first.path();std::atomic<bool> cancelled=false;first.initialize(8192,cancelled,[]{return std::optional<std::string>{};});first.keep();}
+ if(!std::filesystem::exists(sharedPath))throw std::runtime_error("Kept dataset was deleted");
+ {ioscope::Scratch reused(sharedId,ioscope::ScratchMode::Reuse);if(reused.path()!=sharedPath||reused.size()!=8192)throw std::runtime_error("Reused dataset identity or size mismatch");
+  if(reused.cleanup())throw std::runtime_error("Reused dataset cleanup failed");}
+ if(std::filesystem::exists(sharedPath)||std::filesystem::exists(sharedPath.parent_path()))throw std::runtime_error("Reused dataset not cleaned up");
+ bool missing=false;try{ioscope::Scratch(ioscope::random_id(),ioscope::ScratchMode::Reuse);}catch(const std::exception&){missing=true;}if(!missing)throw std::runtime_error("Reuse of a nonexistent dataset accepted");
+ const auto tamperedId=ioscope::random_id();
+ {ioscope::Scratch tampered(tamperedId);std::atomic<bool> cancelled=false;tampered.initialize(4096,cancelled,[]{return std::optional<std::string>{};});tampered.keep();}
+ const auto tamperedManifestPath=ioscope::local_directory()/"scratch"/tamperedId/"ownership.json";nlohmann::json tamperedManifest;{std::ifstream input(tamperedManifestPath);input>>tamperedManifest;}const auto untamperedManifest=tamperedManifest;
+ tamperedManifest["inode"]=tamperedManifest["inode"].get<unsigned long long>()+1;{std::ofstream output(tamperedManifestPath);output<<tamperedManifest;}
+ bool tamperRejected=false;try{ioscope::Scratch(tamperedId,ioscope::ScratchMode::Reuse);}catch(const std::exception&){tamperRejected=true;}if(!tamperRejected)throw std::runtime_error("Reuse accepted a dataset with a tampered ownership manifest");
+ {std::ofstream output(tamperedManifestPath);output<<untamperedManifest;}ioscope::recover_scratch(tamperedId);
+
  const auto orphanId=ioscope::random_id();std::atomic<bool> cancel=false;
  const auto child=ioscope::run_child_process("scratch-test-orphan",executable,{"--orphan",orphanId},cancel,std::chrono::seconds(5),[]{return std::optional<std::string>{};});if(child.exitCode!=99)throw std::runtime_error("Orphan fixture did not exit abruptly: "+child.errors);
  const auto orphan=ioscope::local_directory()/"scratch"/orphanId;const auto manifestPath=orphan/"ownership.json";nlohmann::json manifest;{std::ifstream input(manifestPath);input>>manifest;}const auto original=manifest;manifest["inode"]=manifest["inode"].get<unsigned long long>()+1;{std::ofstream output(manifestPath);output<<manifest;}
  bool mismatch=false;try{ioscope::recover_scratch(orphanId);}catch(const std::exception&){mismatch=true;}if(!mismatch||!std::filesystem::exists(orphan/"data.bin")||!std::filesystem::exists(manifestPath))throw std::runtime_error("Recovery deleted mismatched ownership");
  {std::ofstream output(manifestPath);output<<original;}ioscope::recover_scratch(orphanId);if(std::filesystem::exists(orphan))throw std::runtime_error("Verified orphan cleanup failed");
- std::cout<<"PASS: private local scratch, exclusive ownership, cancellation, idempotent identity-based cleanup, traversal rejection\n";return 0;
+ std::cout<<"PASS: private local scratch, exclusive ownership, cancellation, idempotent identity-based cleanup, traversal rejection, dataset reuse and tamper rejection\n";return 0;
 }catch(const std::exception& e){std::cerr<<e.what();return 1;}}

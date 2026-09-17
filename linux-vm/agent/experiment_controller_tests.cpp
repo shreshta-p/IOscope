@@ -5,10 +5,12 @@ using namespace ioscope;
 class FakeEngine:public WorkloadEngine {
 public:
  std::atomic<int> calls{0};bool wait=false,fail=false;
- void ready()override{}
- Json metadata(const Json&,const std::string&)override{return {{"name","fake-adapter-test"},{"version","test"},{"sha256",std::string(64,'0')},{"argv",Json::array()}};}
- EngineResult execute(const Json&,const std::string&,const std::atomic<bool>& cancel,const std::function<std::optional<std::string>()>& watchdog,const std::function<void()>& running)override{
-  calls++;running();while(wait&&!cancel.load())std::this_thread::sleep_for(std::chrono::milliseconds(10));EngineResult result;if(fail){result.state="failed";result.reason="Authored parser failure";return result;}if(cancel.load()){result.state="cancelled";result.reason="Test cancellation";}else if(auto reason=watchdog()){result.state="aborted";result.reason=reason;}else result.state="completed";return result;
+ std::vector<std::string> seenDatasetIds;std::vector<bool> seenPrepare,seenCleanup;
+ void ready(const std::string&)override{}
+ Json metadata(const Json&,const std::string&,const std::string&)override{return {{"name","fake-adapter-test"},{"version","test"},{"sha256",std::string(64,'0')},{"argv",Json::array()}};}
+ EngineResult execute(const Json&,const std::string&,const std::atomic<bool>& cancel,const std::function<std::optional<std::string>()>& watchdog,const std::function<void()>& running,const std::string& datasetId,bool prepareDataset,bool cleanupDataset)override{
+  calls++;seenDatasetIds.push_back(datasetId);seenPrepare.push_back(prepareDataset);seenCleanup.push_back(cleanupDataset);
+  running();while(wait&&!cancel.load())std::this_thread::sleep_for(std::chrono::milliseconds(10));EngineResult result;if(fail){result.state="failed";result.reason="Authored parser failure";return result;}if(cancel.load()){result.state="cancelled";result.reason="Test cancellation";}else if(auto reason=watchdog()){result.state="aborted";result.reason=reason;}else result.state="completed";return result;
  }
 };
 static Json make_definition(const Json& baseWorkload,const std::vector<int>& queueDepths,int settleSeconds){
@@ -21,6 +23,16 @@ static Json make_definition(const Json& baseWorkload,const std::vector<int>& que
    {"purpose","Observe queue depth "+std::to_string(queueDepths[i])},{"workload",workload},{"observe",Json::array({"storage.read.bytes_per_second"})},
    {"settleSeconds",settleSeconds}});
  }
+ return definition;
+}
+static Json make_access_pass_definition(const Json& baseWorkload){
+ Json definition={{"schemaVersion","1.0.0"},{"definitionId","access-pass-test"},{"title","First/repeated access (test)"},
+  {"question","Does a repeated read differ from the first?"},{"concept","Preparation may warm cache; never claim genuinely cold."},
+  {"variable","accessPass"},{"hypothesis","A repeated pass may read faster than the first."},{"phases",Json::array()}};
+ const char* passes[]={"first","repeated"};
+ for(int i=0;i<2;i++)definition["phases"].push_back({{"schemaVersion","1.0.0"},{"phaseId",std::string(passes[i])+"-pass"},{"ordinal",i},
+  {"purpose",std::string("Observe the ")+passes[i]+" pass"},{"workload",baseWorkload},{"observe",Json::array({"storage.read.bytes_per_second"})},
+  {"settleSeconds",0}});
  return definition;
 }
 int main(int argc,char** argv){try{
@@ -68,6 +80,19 @@ int main(int argc,char** argv){try{
  auto retried=experiments.start(request);
  if(retried["executionId"]!=executionId||engine.calls!=3)throw std::runtime_error("Repeated experiment request executed again");
 
+ // First/repeated access: both phases share one dataset, keyed by the
+ // execution, not each phase's own runId. Phase one prepares and keeps it;
+ // phase two reuses and cleans it up.
+ engine.calls=0;engine.seenDatasetIds.clear();engine.seenPrepare.clear();engine.seenCleanup.clear();
+ auto accessPassDefinition=make_access_pass_definition(baseWorkload);
+ Json accessPassRequest={{"schemaVersion","1.0.0"},{"requestId",std::string(32,'e')},{"definition",accessPassDefinition}};
+ auto accessStarted=experiments.start(accessPassRequest);const std::string accessExecutionId=accessStarted["executionId"];
+ auto accessFinished=wait();
+ if(accessFinished["status"]!="completed"||engine.calls!=2)throw std::runtime_error("Access-pass experiment did not complete cleanly: "+accessFinished.dump());
+ if(engine.seenDatasetIds[0]!=accessExecutionId||engine.seenDatasetIds[1]!=accessExecutionId)throw std::runtime_error("Access-pass phases did not share one dataset");
+ if(engine.seenPrepare[0]!=true||engine.seenPrepare[1]!=false)throw std::runtime_error("Access-pass prepare flags wrong: first pass must prepare, repeated pass must reuse");
+ if(engine.seenCleanup[0]!=false||engine.seenCleanup[1]!=true)throw std::runtime_error("Access-pass cleanup flags wrong: first pass must keep the dataset, repeated pass must clean it up");
+
  // Cancellation stops the current phase and every phase after it.
  engine.wait=true;engine.calls=0;
  auto cancelRequest=make_definition(baseWorkload,{1,2,4},0);
@@ -87,5 +112,5 @@ int main(int argc,char** argv){try{
  const auto recovered=store.experiment(std::string(48,'c'));
  if(recovered["status"]!="interrupted"||recovered["endedAt"].is_null())throw std::runtime_error("Orphaned experiment was not recovered");
 
- std::cout<<"PASS: aggregate admission, budget rejection, sequenced real phases with linkage, idempotency, cancellation and recovery\n";return 0;
+ std::cout<<"PASS: aggregate admission, budget rejection, sequenced real phases with linkage, idempotency, shared-dataset access-pass flags, cancellation and recovery\n";return 0;
 }catch(const std::exception& error){std::cerr<<error.what()<<"\n";return 1;}}

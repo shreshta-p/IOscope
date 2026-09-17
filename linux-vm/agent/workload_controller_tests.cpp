@@ -5,9 +5,9 @@ using namespace ioscope;
 class FakeEngine:public WorkloadEngine {
 public:
  std::atomic<int> calls{0};bool wait=false,fail=false;
- void ready()override{}
- Json metadata(const Json&,const std::string&)override{return {{"name","fake-adapter-test"},{"version","test"},{"sha256",std::string(64,'0')},{"argv",Json::array()}};}
- EngineResult execute(const Json&,const std::string&,const std::atomic<bool>& cancel,const std::function<std::optional<std::string>()>& watchdog,const std::function<void()>& running)override{
+ void ready(const std::string&)override{}
+ Json metadata(const Json&,const std::string&,const std::string&)override{return {{"name","fake-adapter-test"},{"version","test"},{"sha256",std::string(64,'0')},{"argv",Json::array()}};}
+ EngineResult execute(const Json&,const std::string&,const std::atomic<bool>& cancel,const std::function<std::optional<std::string>()>& watchdog,const std::function<void()>& running,const std::string&,bool,bool)override{
   calls++;running();while(wait&&!cancel.load())std::this_thread::sleep_for(std::chrono::milliseconds(10));EngineResult result;if(fail){result.state="failed";result.reason="Authored parser failure";result.diagnostic="Authored diagnostic artifact";return result;}if(cancel.load()){result.state="cancelled";result.reason="Test cancellation";}else if(auto reason=watchdog()){result.state="aborted";result.reason=reason;}else result.state="completed";return result;
  }
 };

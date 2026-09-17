@@ -1,7 +1,7 @@
 # Linux VM current state
 
-Updated 2026-09-17 (V1 completion underway: Phase 7A/7B/7C proven against real
-fio, Milestones 1-3 done).
+Updated 2026-09-17 (V1 completion underway: Phase 7A-7D all proven against real
+fio, Milestones 1-4 done).
 
 ## Implemented
 
@@ -476,8 +476,52 @@ for `O_DIRECT` at this scale. This is exactly the kind of result
 Both experiments' scratch directories were empty after completion (9 phases total
 across both, no orphans).
 
-Not yet done: 7D real run (needs the scratch-reuse engine change first), the
-Experiments UI, and cross-phase comparison display.
+**Milestone 4 (7D first/repeated access, real fio, user opt-in given) — done:**
+required a real engine change, the only non-additive one in this whole feature:
+`Scratch` gained a `ScratchMode::Reuse` constructor path (opens an existing dataset
+instead of exclusively creating one, verifying identity against the *original*
+phase's ownership manifest rather than writing a new one) and a `keep()` method
+(marks cleanup a no-op, for a phase that deliberately leaves its dataset behind).
+`WorkloadEngine::execute()`/`metadata()` gained `datasetId`/`prepareDataset`/
+`cleanupDataset` parameters (defaulting to today's fresh-dataset-per-run behavior
+everywhere except this one experiment type), and `WorkloadController::start()`
+threads them through from an optional override. `ExperimentController` triggers
+sharing purely by checking `definition.variable=="accessPass"` — no new schema
+field needed, since that enum value already existed for exactly this experiment
+type. One real bug surfaced only by an actual run (fake-adapter tests never
+exercise `ready()`'s orphan-scan against a genuinely kept dataset): `FioEngine::
+ready()`'s "any leftover scratch entry means an orphan, refuse to start" check
+correctly caught phase one's deliberately-kept dataset as if it were a crash
+artifact, denying phase two. Fixed by having `ready()` accept an
+`expectedDatasetId` it tolerates (empty everywhere except a reuse phase) —
+`WorkloadEngine::ready()`'s interface changed accordingly.
+
+New coverage: `scratch_tests.cpp` proves reuse against a real kept dataset (path/
+size match, cleanup on reuse, rejecting reuse of a nonexistent dataset, and
+rejecting reuse when the ownership manifest is tampered); `experiment_controller_
+tests.cpp` proves `ExperimentController` computes the right shared-dataset/
+prepare/cleanup flags per phase via `FakeEngine`. All 11 native tests pass.
+
+Real run: 2 phases (first pass, repeated pass), sequential read, QD4, 64 MiB, 5s
+each. Both phases' `engine.argv` show the *identical*
+`--filename=.../<executionId>/data.bin` path — genuinely the same on-disk bytes,
+not two independently-prepared files:
+
+| Pass | IOPS | Read B/s | Latency mean (ms) |
+|---|---|---|---|
+| first | 512.1 | 33.6 MB/s | 0.00455 |
+| repeated | 512.1 | 33.6 MB/s | 0.00365 |
+
+Throughput/IOPS identical (both rate-capped); the repeated pass shows lower
+latency, consistent with a warm page cache — but per the spec's own disclaimer,
+this is not claimed as proof of a genuinely cold first pass, since preparation
+itself may already have warmed the cache. The scratch directory was visibly
+present in `~/.local/share/ioscope/scratch/` throughout both phases and empty
+immediately after phase two completed — the shared-dataset lifecycle working
+exactly as designed.
+
+Not yet done: the Experiments UI and cross-phase comparison display (7E's
+capability gate is next).
 
 ## Known limitations / not yet done
 
@@ -521,9 +565,10 @@ Experiments UI, and cross-phase comparison display.
       placeholder-only Experiments/Learn/Analyze state — see "L3 investigation."
       The user then asked to complete V1 itself; see "V1 completion" above,
       now in progress.
-- [ ] Phase 7A-7D (experiments): admission/sequencing engine done (Milestone 1);
-      7A/7B/7C all proven end-to-end against real fio with linked phases and real
-      measured evidence (Milestones 2-3). 7D and the UI not yet done.
+- [ ] Phase 7A-7D (experiments): all four experiment types (queue-depth sweep,
+      block-size sweep, buffered/unbuffered, first/repeated access) proven
+      end-to-end against real fio with linked phases and real measured evidence
+      (Milestones 1-4). The Experiments UI is not yet done.
 - [ ] Phase 7E (GPU pipeline): capability-gate only, not started.
 - [ ] Phase 8 (deterministic analyzer), Phase 9 (Learn): not started.
 - [ ] Phase 10 (Ask): deferred at the user's request.
@@ -547,12 +592,12 @@ dependency resolved fine in that environment.
 ## Next task
 
 Continuing V1 completion per `~/.claude/plans/woolly-waddling-kahan.md`,
-milestone 4: 7D (first/repeated access) — needs the scratch-reuse/deferred-cleanup
-engine change (both phases must read the same prepared file) before it can be
-proven for real. Then milestones 5-9: 7E capability gate, the Experiments UI
-(definition picker, admission preview, phase progress, cross-phase comparison),
-Phase 8 analyzer, Phase 9 Learn, and Phase 11 polish — each with its own commit
-and real evidence before the next starts, per the plan.
+milestone 5: 7E's capability gate (a CUDA-presence probe reporting the GPU
+pipeline experiment unsupported on this VM — no execution code, per the user's
+direction). Then milestones 6-9: the Experiments UI (definition picker,
+admission preview, phase progress, cross-phase comparison), Phase 8 analyzer,
+Phase 9 Learn, and Phase 11 polish — each with its own commit and real evidence
+before the next starts, per the plan.
 
 ## Baseline handoff
 

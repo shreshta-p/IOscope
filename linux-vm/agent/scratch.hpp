@@ -40,32 +40,53 @@ inline void require_durable_filesystem(const std::filesystem::path& path){
  const auto fstype=mount_fstype(path);
  for(const auto& bad:disallowed)if(fstype==bad)throw std::runtime_error("Scratch filesystem '"+fstype+"' is not a durable local disk (RAM-backed or shared-folder); refusing to admit a disk workload there");
 }
+// Create: today's exclusive per-run target (O_CREAT|O_EXCL). Reuse: opens a
+// dataset a prior phase created and deliberately left behind (Scratch::keep()),
+// verifying its identity against that phase's own ownership manifest rather
+// than writing a new one -- for docs/07-EXPERIMENT-SPEC.md's first/repeated
+// access experiment, where two phases must read the exact same on-disk bytes,
+// not two independently-prepared-but-similar files.
+enum class ScratchMode{Create,Reuse};
 class Scratch {
  std::filesystem::path directory_,target_;Fd directoryFd_,targetFd_,manifestFd_;bool cleaned_=false,identityKnown_=false;struct stat identity_{};
 public:
- explicit Scratch(const std::string& runId){try{
-  posix_require(runId.size()==48&&runId.find_first_not_of("0123456789abcdef")==std::string::npos,"Invalid scratch ownership ID");
+ explicit Scratch(const std::string& datasetId,ScratchMode mode=ScratchMode::Create){try{
+  posix_require(datasetId.size()==48&&datasetId.find_first_not_of("0123456789abcdef")==std::string::npos,"Invalid scratch ownership ID");
   const auto parent=local_directory();reject_symlink_ancestors(parent);
   const auto root=parent/"scratch";
   if(mkdir(root.c_str(),0700)!=0)posix_require(errno==EEXIST,"Create scratch root");
   reject_symlink_ancestors(root);require_durable_filesystem(root);
-  directory_=root/runId;
-  posix_require(mkdir(directory_.c_str(),0700)==0,"Create unique run directory");
-  directoryFd_.reset(open(directory_.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW));posix_require(static_cast<bool>(directoryFd_),"Hold owned directory");
-  target_=directory_/"data.bin";
-  targetFd_.reset(open(target_.c_str(),O_CREAT|O_EXCL|O_RDWR|O_NOFOLLOW,0600));posix_require(static_cast<bool>(targetFd_),"Exclusively create target");
-  struct stat info{};posix_require(fstat(targetFd_.get(),&info)==0&&S_ISREG(info.st_mode)&&info.st_nlink==1,"Require regular owned file with one link");
-  identity_=info;identityKnown_=true;
-  const auto manifest=nlohmann::json({{"schemaVersion","1.0.0"},{"runId",runId},{"device",static_cast<std::uint64_t>(info.st_dev)},{"inode",static_cast<std::uint64_t>(info.st_ino)},{"createdAt",utc_now()}}).dump();
-  const auto manifestPath=directory_/"ownership.json";
-  manifestFd_.reset(open(manifestPath.c_str(),O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW,0600));posix_require(static_cast<bool>(manifestFd_),"Create ownership manifest");
-  const auto written=write(manifestFd_.get(),manifest.data(),manifest.size());
-  posix_require(written==static_cast<ssize_t>(manifest.size())&&fsync(manifestFd_.get())==0,"Persist ownership manifest");
+  directory_=root/datasetId;target_=directory_/"data.bin";
+  if(mode==ScratchMode::Create){
+   posix_require(mkdir(directory_.c_str(),0700)==0,"Create unique run directory");
+   directoryFd_.reset(open(directory_.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW));posix_require(static_cast<bool>(directoryFd_),"Hold owned directory");
+   targetFd_.reset(open(target_.c_str(),O_CREAT|O_EXCL|O_RDWR|O_NOFOLLOW,0600));posix_require(static_cast<bool>(targetFd_),"Exclusively create target");
+   struct stat info{};posix_require(fstat(targetFd_.get(),&info)==0&&S_ISREG(info.st_mode)&&info.st_nlink==1,"Require regular owned file with one link");
+   identity_=info;identityKnown_=true;
+   const auto manifest=nlohmann::json({{"schemaVersion","1.0.0"},{"runId",datasetId},{"device",static_cast<std::uint64_t>(info.st_dev)},{"inode",static_cast<std::uint64_t>(info.st_ino)},{"createdAt",utc_now()}}).dump();
+   const auto manifestPath=directory_/"ownership.json";
+   manifestFd_.reset(open(manifestPath.c_str(),O_CREAT|O_EXCL|O_WRONLY|O_NOFOLLOW,0600));posix_require(static_cast<bool>(manifestFd_),"Create ownership manifest");
+   const auto written=write(manifestFd_.get(),manifest.data(),manifest.size());
+   posix_require(written==static_cast<ssize_t>(manifest.size())&&fsync(manifestFd_.get())==0,"Persist ownership manifest");
+  }else{
+   reject_symlink_ancestors(directory_);
+   directoryFd_.reset(open(directory_.c_str(),O_RDONLY|O_DIRECTORY|O_NOFOLLOW));posix_require(static_cast<bool>(directoryFd_),"Open existing dataset directory");
+   targetFd_.reset(open(target_.c_str(),O_RDWR|O_NOFOLLOW));posix_require(static_cast<bool>(targetFd_),"Open existing dataset target");
+   struct stat info{};posix_require(fstat(targetFd_.get(),&info)==0&&S_ISREG(info.st_mode)&&info.st_nlink==1,"Require regular owned file with one link");
+   std::ifstream manifestStream(directory_/"ownership.json");std::ostringstream buffer;buffer<<manifestStream.rdbuf();
+   const auto owner=parse_input(buffer.str());
+   posix_require(owner.at("schemaVersion")=="1.0.0"&&owner.at("device").get<std::uint64_t>()==static_cast<std::uint64_t>(info.st_dev)&&owner.at("inode").get<std::uint64_t>()==static_cast<std::uint64_t>(info.st_ino),"Reused dataset identity does not match ownership manifest");
+   identity_=info;identityKnown_=true;
+  }
  }catch(...){cleanup();throw;}}
  ~Scratch(){auto error=cleanup();if(error)std::cerr<<"Scratch cleanup requires attention: "<<*error<<"\n";}
  Scratch(const Scratch&)=delete;Scratch& operator=(const Scratch&)=delete;
  const std::filesystem::path& path()const{return target_;}
  int preparation_fd()const{return targetFd_.get();}
+ std::uintmax_t size()const{return identity_.st_size;}
+ // Deliberately skip real cleanup: a later phase (docs/07-EXPERIMENT-SPEC.md's
+ // first/repeated access experiment) still owns and will clean up this dataset.
+ void keep(){cleaned_=true;}
  void initialize(std::uint64_t size,const std::atomic<bool>& cancel,const std::function<std::optional<std::string>()>& watchdog){
   initialize_fd(targetFd_.get(),size,cancel,watchdog);
  }
