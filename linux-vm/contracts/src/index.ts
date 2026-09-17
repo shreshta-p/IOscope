@@ -454,7 +454,7 @@ export interface WorkloadAdmission {
   rateBytesPerSecond: number;
   restrictedThermals: boolean;
   engineReady: boolean;
-  engineVersion: '2.3';
+  engineVersion: string;
   diskAllocationBytes: number;
 }
 /**
