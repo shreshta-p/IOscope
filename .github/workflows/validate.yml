@@ -33,3 +33,17 @@ jobs:
           cache-dependency-path: linux-vm/package-lock.json
       - run: npm ci
       - run: npm run verify
+  linux-agent-validation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: linux-vm/agent
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S . -B build
+      - run: cmake --build build -j$(nproc)
+      # No fio install here: none of these tests invoke a real fio process (they
+      # exercise fio_arguments()/parse_fio_json() as pure functions, and
+      # WorkloadController's own tests use a FakeEngine) -- this is a fake-adapter
+      # test suite, not a hardware workload, per repo policy on CI.
+      - run: ctest --test-dir build --output-on-failure
